@@ -11,6 +11,11 @@ class Test(commands.Cog):
     async def test(self, ctx):
         await ctx.send('Command heard. Test successful.')
 
+    
+    @commands.command(aliases = ['emoji'])
+    async def emoji_test(self, ctx):
+        await ctx.send(':white_check_mark:')
+
 
 def setup(client):
     client.add_cog(Test(client))
