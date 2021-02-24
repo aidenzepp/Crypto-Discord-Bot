@@ -15,8 +15,10 @@ with open('src/secrets.json') as secrets_file:
 
 class Stocks(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client, secrets = secrets, keys = api_keys):
         self.client = client
+        self.secrets = secrets
+        self.keys = keys
 
 
     # -- Events --
