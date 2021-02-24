@@ -3,24 +3,26 @@ import discord
 from discord.ext import commands
 import random
 import time
+import json
 import os
 #--
 
-api_keys = {
-    'Public': 'WJdQbnsubNK5kn9oQWLFAlBy4zjEXkJe7SSoTEpdMySh+XRQsKKs2aSG',
-    'Private': 'eg7TpG6fyhWqHdGU/AHMHSRH3lZPZx6og3ahbYUj234NxRS6sMznp2eJsafzo3J12ulmXlf3iOOIUrMVP0GI4w=='
-}
+# -- Load API Keys --
+with open('src/secrets.json') as secrets_file: 
+    secrets = json.load(secrets_file)
+    api_keys = secrets['keys']
+
 
 class Stocks(commands.Cog):
 
-    def __init__(self, client, keys = api_keys):
+    def __init__(self, client):
         self.client = client
-        self.keys = keys
+
 
     # -- Events --
 
 
-    # -- Commands --
+    # -- Commands --    
 
 
 def setup(client):
