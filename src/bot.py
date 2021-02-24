@@ -3,6 +3,7 @@ from discord.ext import commands
 from re import L
 import random
 import time
+import json
 import os
 # --
 
@@ -13,7 +14,8 @@ client = commands.Bot(command_prefix = '.')
 # -- Events --
 @client.event
 async def on_ready():
-    print('Bot is ready.') 
+    print('Bot is ready.')
+
 
 
 # -- Commands --
@@ -33,12 +35,18 @@ async def reload(ctx, extension):
     client.load_extension(f'cogs.{extension}')
 
 
+# -- Load Discord API Key --
+with open('src/secrets.json') as secrets_file: 
+    secrets = json.load(secrets_file)
+    api_keys = secrets['keys']
+
+
 # -- Load Cogs --
-for filename in os.listdir('./cogs'):
+for filename in os.listdir('src/cogs'):
 
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
 
 
 # -- Run --
-client.run('ODExMjg1NDY2NjQwMDIzNjUy.YCv-eA.IeA6mMJiCtSKLA2EjxR0nXaF1xQ')
+client.run(api_keys['discord'])
