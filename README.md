@@ -34,11 +34,11 @@ The bot's code uses a `.gitignore` file to hide files containing unnecessary or 
 2. Access the `.gitignore` file using the default Windows 10 application 'Notepad', or any other text editor application.
 3. In the `.gitignore` file, type the directory path for each unnecessary or information-sensitive file. Make certain to type each file's directory path on a separate line. For example:
 ```sh
-1   src/secrets.json
+1   src/hidden
 2   src/cogs/__psycache__
 ```
 
-For the example above, the `secrets.json` file is holding the information for the API keys used for both the Discord API and the CoinMarketCap API. Below shows the format used for the source `secrets.json` file.
+For the example above, `src/hidden` is a folder named `hidden` that is being stored in the `src` directory. For this source code, all files being hidden by `.gitignore` were stored in `src/hidden`, as long as they were able to be stored in `src/hidden`. The `secrets.json` file stored within the `hidden` folder is holding information for the API keys, used for both the Discord API and the CoinMarketCap API. Below shows the format used for the source `secrets.json` file.
 ```sh
 1   {
 2       "keys": {
