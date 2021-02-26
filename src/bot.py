@@ -15,8 +15,7 @@ client = commands.Bot(command_prefix = '.')
 @client.event
 async def on_ready():
     print('Bot is ready.')
-
-
+    
 
 # -- Commands --
 @client.command()
@@ -36,8 +35,8 @@ async def reload(ctx, extension):
 
 
 # -- Load Discord API Key --
-with open('src/secrets.json') as secrets_file: 
-    secrets = json.load(secrets_file)
+with open('src/hidden/secrets.json') as f: 
+    secrets = json.load(f)
     api_keys = secrets['keys']
 
 

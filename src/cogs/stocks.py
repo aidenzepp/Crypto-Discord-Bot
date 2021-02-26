@@ -8,8 +8,8 @@ import os
 #--
 
 # -- Load API Keys --
-with open('src/secrets.json') as secrets_file: 
-    secrets = json.load(secrets_file)
+with open('src/hidden/secrets.json') as f: 
+    secrets = json.load(f)
     api_keys = secrets['keys']
 
 
