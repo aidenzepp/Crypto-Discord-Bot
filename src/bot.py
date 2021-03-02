@@ -15,7 +15,8 @@ client = commands.Bot(command_prefix = '.')
 @client.event
 async def on_ready():
     print('Bot is ready.')
-    
+
+
 
 # -- Commands --
 @client.command()
@@ -34,10 +35,12 @@ async def reload(ctx, extension):
     client.load_extension(f'cogs.{extension}')
 
 
+
 # -- Load Discord API Key --
 with open('src/hidden/secrets.json') as f: 
     secrets = json.load(f)
     api_keys = secrets['keys']
+
 
 
 # -- Load Cogs --
@@ -45,6 +48,7 @@ for filename in os.listdir('src/cogs'):
 
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
+
 
 
 # -- Run --
