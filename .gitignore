@@ -1,3 +1,4 @@
 src/hidden
+src/CMC_data.json
 src/cogs/__pycache__
 .vscode
