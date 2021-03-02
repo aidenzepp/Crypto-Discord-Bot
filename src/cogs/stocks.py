@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+from decimal import *
 import json
 #--
 
@@ -26,7 +27,7 @@ class Stocks(commands.Cog):
 
         parameters = {
             'start': '1',
-            'limit': '5000',
+            'limit': '100',
             'convert': 'USD'
         }
 
@@ -58,6 +59,48 @@ class Stocks(commands.Cog):
 
 
     # -- Commands --
+    @commands.command(aliases = ['c-info', 'crypto-5ranks', 'crypto'])
+    async def crypto_info(self, ctx):
+        with open('src/CMC_data.json') as CMC_data:
+            all_data = json.load(CMC_data)
+            data = all_data['data']
+
+        response = discord.Embed(
+            title = 'Cryptocurrency  |  Top 5 Ranked Currencies:',
+            description = 'The following is information on the top 5 ranked cryptocurriences.',
+            colour = (discord.Colour.blue())
+        )
+
+        for currency in data:
+
+            if currency['cmc_rank'] <= 5:
+
+                currency_name = currency['name']
+                symbol = currency['symbol']
+                rank = currency['cmc_rank']
+                last_updated = currency['last_updated']
+
+                # Setting price to 2 decimal places.
+                price_USD = round(currency['quote']['USD']['price'], 2)
+
+
+                response.add_field(
+                    name = f'Rank {rank}:',
+                    value = '''\
+                        `Name:` **{name}**
+                        `Symbol:` {symbol}
+                        `Price [USD]`: ${price_USD}
+                        `Last Updated:` {last_updated}'''\
+                        .format(name = currency_name, symbol = symbol, price_USD = price_USD, last_updated = last_updated),
+                    inline = False
+                )
+
+        response.set_footer(
+            text = 'The above data is provided by CoinMarketCap\'s API.'
+        )
+
+        await ctx.send(embed = response)
+
 
 
 def setup(client):
