@@ -1,10 +1,9 @@
 from re import L
 import discord
 from discord.ext import commands
-import random
-import time
+from requests import Request, Session
+from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
-import os
 #--
 
 # -- Load API Keys --
@@ -21,7 +20,9 @@ class Stocks(commands.Cog):
         self.keys = keys
 
 
+
     # -- Events --
+
 
 
     # -- Commands --    
