@@ -48,6 +48,7 @@ for filename in os.listdir('src/cogs'):
 
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
+        print(f'[cogs.{filename[:-3]}] has been loaded.')
 
 
 
