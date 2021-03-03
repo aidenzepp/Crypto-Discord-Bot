@@ -140,6 +140,57 @@ class Stocks(commands.Cog):
 
         await ctx.send(embed = response)
 
+    
+    @commands.command()
+    async def checkout(self, ctx, symbol = 'BTC'):
+        data = await self.load_data()
+        upper_symbol = symbol.upper()
+
+        # Currency Info - Message
+        currency_info = discord.Embed(
+            title = f'Cryptocurrency Information: [{upper_symbol}]',
+            colour = (discord.Colour.blue())
+        )
+
+        # Currency Not Found - Error Message
+        not_found_error = discord.Embed(
+            title = 'Cryptocurrency Information  |  ERROR:',
+            description = f'The cryptocurrency, {upper_symbol}, requested cannot be found in the list of cryptocurrencies.',
+            colour = (discord.Colour.red())
+        )
+
+
+        for currency in data:
+
+            if currency['symbol'] == upper_symbol:
+
+                # Setting price to 2 decimal places.
+                price_USD = round(currency['quote']['USD']['price'], 2)
+
+                fields = [
+                    ['`Name:`', currency['name'], True],
+                    ['`Symbol:`', currency['symbol'], True],
+                    ['`ID:`', currency['id'], True],
+                    ['`Price [USD]:`', f'${price_USD}', True],
+                    ['`[USD] 24H Volume:`', currency['quote']['USD']['volume_24h'], True],
+                    ['[---]', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
+                    ['Date Added:', currency['date_added'], True],
+                    ['CMC Rank:', currency['cmc_rank'], True],
+                    ['Number of Market Pairs:', currency['num_market_pairs'], False],
+                    ['Total Supply:', currency['total_supply'], True],
+                    ['Circulating Supply:', currency['circulating_supply'], True],
+                    ['Maximum Supply:', currency['max_supply'], True],
+                    [f'{chr(173)}', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
+                    ['Last Updated:', currency['last_updated'], False]
+                ]
+
+                for name, value, inline in fields:
+                    currency_info.add_field(name = name, value = value, inline = inline)
+
+                return await ctx.send(embed = currency_info)
+        
+        return await ctx.send(embed = not_found_error)
+
 
 
 def setup(client):
