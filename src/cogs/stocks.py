@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from inspect import indentsize
 from re import L
 import discord
@@ -20,6 +21,7 @@ class Stocks(commands.Cog):
         self.client = client
         self.secrets = secrets
         self.keys = keys
+        self.data = NULL
 
 
         # CoinMarketCap API Documentation - Quickstart Guide's Format
@@ -49,27 +51,37 @@ class Stocks(commands.Cog):
                 json.dump(data, f, indent = 4)
 
         except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
-            print('Encountered Error: ' + ERROR)
+            print('[CMC API] Encountered Error: ' + ERROR)
         # --
+
+
+
+    # -- Functions --
+    async def load_data(self):
+        if self.data == NULL:
+            with open('src/CMC_data.json') as CMC_data:
+                all_data = json.load(CMC_data)
+                self.data = all_data['data']
+        
+        return self.data
 
 
 
     # -- Events --
 
-
+        
 
     # -- Commands --
     @commands.command(aliases = ['c-info', 'crypto-5ranks', 'crypto'])
     async def crypto_info(self, ctx):
-        with open('src/CMC_data.json') as CMC_data:
-            all_data = json.load(CMC_data)
-            data = all_data['data']
+        data = await self.load_data()
 
         response = discord.Embed(
             title = 'Cryptocurrency  |  Top 5 Ranked Currencies:',
             description = 'The following is information on the top 5 ranked cryptocurriences.',
             colour = (discord.Colour.blue())
         )
+
 
         for currency in data:
 
@@ -82,7 +94,6 @@ class Stocks(commands.Cog):
 
                 # Setting price to 2 decimal places.
                 price_USD = round(currency['quote']['USD']['price'], 2)
-
 
                 response.add_field(
                     name = f'Rank {rank}:',
