@@ -22,6 +22,7 @@ class Stocks(commands.Cog):
         self.secrets = secrets
         self.keys = keys
         self.data = NULL
+        self.CMC_filepath = 'src/hidden/CMC_data.json'
 
 
         # CoinMarketCap API Documentation - Quickstart Guide's Format
@@ -47,7 +48,7 @@ class Stocks(commands.Cog):
             response = session.get(url, params = parameters)
             data = json.loads(response.text)
 
-            with open('src/CMC_data.json', 'w') as f:
+            with open(self.CMC_filepath, 'w') as f:
                 json.dump(data, f, indent = 4)
 
         except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
@@ -59,7 +60,7 @@ class Stocks(commands.Cog):
     # -- Functions --
     async def load_data(self):
         if self.data == NULL:
-            with open('src/CMC_data.json') as CMC_data:
+            with open(self.CMC_filepath) as CMC_data:
                 all_data = json.load(CMC_data)
                 self.data = all_data['data']
         
@@ -74,7 +75,7 @@ class Stocks(commands.Cog):
     # -- Commands --
     @commands.command(aliases = ['cmc-force', 'data-force', 'load-cmcdata'])
     async def force_load__cmc_data(self, ctx):
-        with open('src/CMC_data.json') as CMC_data:
+        with open(self.CMC_filepath) as CMC_data:
             all_data = json.load(CMC_data)
             self.data = all_data['data']
         
