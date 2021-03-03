@@ -76,6 +76,17 @@ class Stocks(commands.Cog):
     async def crypto_info(self, ctx):
         data = await self.load_data()
 
+        if len(data) == 0:
+            error = discord.Embed(
+                title = 'Cryptocurrency  |  ERROR:',
+                description = 'The cryptocurrency data appears to be missing!',
+                colour = (discord.Colour.blue())
+            )
+
+            await ctx.send(embed = error)
+            return
+
+
         response = discord.Embed(
             title = 'Cryptocurrency  |  Top 5 Ranked Currencies:',
             description = 'The following is information on the top 5 ranked cryptocurriences.',
