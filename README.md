@@ -4,7 +4,7 @@ A bot based on Discord API and written in Python v3.9.2.
 The bot is equipped with some basic commands, but is overall meant to provide notifications to a Discord user regarding stock and/or cryptocurrency information.
 
 - Author: Aiden Zepp
-- 'README.md' file updated as of: 2 March, 2021.
+- 'README.md' file updated as of: 3 March, 2021.
 
 #
 
@@ -12,6 +12,7 @@ The bot is equipped with some basic commands, but is overall meant to provide no
 
 - Use various test commands to confirm bot is working.
 - Fetches and stores cryptocurrency data from [CoinMarketCap](https://coinmarketcap.com/).
+- Displays information about one or multiple different cryptocurrencies, specified by the user.
 
 #
 
