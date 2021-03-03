@@ -192,6 +192,78 @@ class Stocks(commands.Cog):
         return await ctx.send(embed = not_found_error)
 
 
+    @commands.command(aliases = ['check-many', 'multicheck', 'mcheck', 'checkm'])
+    async def checkout_many(self, ctx, *, crypt_symbols):
+        data = await self.load_data()
+        
+        requested_symbols = crypt_symbols.upper().split(' ')
+        symbols_not_found = []
+
+        i = 1
+
+
+        for symbol in requested_symbols:
+            # Using 'check' to add a symbol not found in 'data'.
+            # Otherwise it would add every symbol.
+            check = False
+
+            for currency in data:
+
+                if currency['symbol'] == symbol:
+
+                    currency_info = discord.Embed(
+                        title = f'Cryptocurrency Information: [{symbol}]  |  {i} of {len(requested_symbols)}',
+                        colour = (discord.Colour.blue())
+                    )
+
+                    # Setting price to 2 decimal places.
+                    price_USD = round(currency['quote']['USD']['price'], 2)
+
+                    fields = [
+                        ['`Name:`', currency['name'], True],
+                        ['`Symbol:`', currency['symbol'], True],
+                        ['`ID:`', currency['id'], True],
+                        ['`Price [USD]:`', f'${price_USD}', True],
+                        ['`[USD] 24H Volume:`', currency['quote']['USD']['volume_24h'], True],
+                        [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
+                        ['Date Added:', currency['date_added'], True],
+                        ['CMC Rank:', currency['cmc_rank'], True],
+                        ['Number of Market Pairs:', currency['num_market_pairs'], False],
+                        ['Total Supply:', currency['total_supply'], True],
+                        ['Circulating Supply:', currency['circulating_supply'], True],
+                        ['Maximum Supply:', currency['max_supply'], True],
+                        [f'{chr(173)}', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
+                        ['Last Updated:', currency['last_updated'], False]
+                    ]
+
+                    for name, value, inline in fields:
+                        currency_info.add_field(name = name, value = value, inline = inline)
+
+                    check = True
+                    i += 1
+                    await ctx.send(embed = currency_info)
+            
+            if check == False:
+                symbols_not_found.append(symbol)
+                continue
+    
+    
+        # Symbols Not Found - Error Message
+        if len(symbols_not_found) > 0:
+
+            not_found_error = discord.Embed(
+                title = 'Cryptocurrency Information  |  ERROR:',
+                colour = (discord.Colour.red())
+            )
+
+            not_found_error.add_field(
+                name = 'Symbols Not Found:',
+                value = f'{symbols_not_found}'
+            )
+
+            await ctx.send(embed = not_found_error)
+
+
 
 def setup(client):
     client.add_cog(Stocks(client))
