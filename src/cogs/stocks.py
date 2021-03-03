@@ -72,6 +72,22 @@ class Stocks(commands.Cog):
         
 
     # -- Commands --
+    @commands.command(aliases = ['cmc-force', 'data-force', 'load-cmcdata'])
+    async def force_load__cmc_data(self, ctx):
+        with open('src/CMC_data.json') as CMC_data:
+            all_data = json.load(CMC_data)
+            self.data = all_data['data']
+        
+        confirmation = discord.Embed(
+            title = '[Successful] Force Load: CoinMarketCap Data',
+            description = 'The data from CoinMarketCap has been force loaded into the bot.',
+            colour = (discord.Colour.blue())
+        )
+        
+        await ctx.send(embed = confirmation)
+        return self.data
+
+
     @commands.command(aliases = ['c-info', 'crypto-5ranks', 'crypto'])
     async def crypto_info(self, ctx):
         data = await self.load_data()
