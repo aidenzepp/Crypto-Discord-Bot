@@ -97,7 +97,7 @@ class Stocks(commands.Cog):
             error = discord.Embed(
                 title = 'Cryptocurrency  |  ERROR:',
                 description = 'The cryptocurrency data appears to be missing!',
-                colour = (discord.Colour.blue())
+                colour = (discord.Colour.red())
             )
 
             await ctx.send(embed = error)
@@ -128,7 +128,7 @@ class Stocks(commands.Cog):
                     value = '''\
                         `Name:` **{name}**
                         `Symbol:` {symbol}
-                        `Price [USD]`: ${price_USD}
+                        `Price [USD]:` ${price_USD}
                         `Last Updated:` {last_updated}'''\
                         .format(name = currency_name, symbol = symbol, price_USD = price_USD, last_updated = last_updated),
                     inline = False
