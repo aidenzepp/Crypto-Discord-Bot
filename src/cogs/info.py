@@ -73,7 +73,7 @@ class Information(commands.Cog):
             if (member.display_name, member.discriminator) == (user['name'], user['discriminator']):
 
                 response = discord.Embed(
-                    title = f'@{member.name}  |  User Info:',
+                    title = f'{member.name}  |  User Info:',
                     description = 'This user is already in the system.',
                     colour = (discord.Colour.blue())
                 )
@@ -115,6 +115,50 @@ class Information(commands.Cog):
 
         
         await ctx.send(embed = user_info)
+
+    
+    @commands.command(aliases = ['see-user-info', 'see-uinfo', 'seeuser'])
+    async def see_user_info(self, ctx, member: discord.Member):
+        filepath = 'src/hidden/ALL_USERS_INFO.json'
+
+        with open(filepath) as f:
+            info = json.load(f)
+            users = info['users']
+
+        
+        for user in users:
+
+            if (member.display_name, member.discriminator) == (user['name'], user['discriminator']):
+
+                user_info = discord.Embed(
+                    title = f'{member.name}  |  User Info:',
+                    colour = (discord.Colour.blue())
+                )
+
+                fields = [
+                    ['`Name:`', member.display_name, True],
+                    ['`Discriminator:`', member.discriminator, True],
+                    ['`ID:`', f'||{member.id}||', True],
+                    ['Mention:', member.mention, False],
+                    ['Nickname:', member.nick, True],
+                    ['Colour:', f'{member.colour}', True],
+                    ['Joined At:', f'{member.joined_at}', False]
+                ]
+
+                for name, value, inline in fields:
+                    user_info.add_field(name = name, value = value, inline = inline)
+
+                
+                return await ctx.send(embed = user_info)
+
+        
+        error = discord.Embed(
+            title = f'{member.name}  |  User Info:',
+            description = 'The above user could not be found in the system. Please use the `.adduser` command to add this user to the system.',
+            colour = (discord.Colour.red())
+        )
+
+        await ctx.send(embed = error)
 
 
 
