@@ -7,8 +7,10 @@ import json
 import os
 # --
 
+intents = discord.Intents.default()
+intents.members = True
 
-client = commands.Bot(command_prefix = '.')
+client = commands.Bot(command_prefix = '.', intents = intents)
 
 
 # -- Events --
@@ -20,7 +22,7 @@ async def on_ready():
 
 # -- Commands --
 @client.command()
-async def load(ctx, extension):
+async def load(ctx, extension): 
     client.load_extension(f'cogs.{extension}')
 
 
