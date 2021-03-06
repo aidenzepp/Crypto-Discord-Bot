@@ -1,5 +1,6 @@
 from asyncio.windows_events import NULL
 from inspect import indentsize
+from os import error
 from re import L
 import discord
 from discord.ext import commands
@@ -90,21 +91,10 @@ class Stocks(commands.Cog):
         return self.data
 
 
-    @commands.command(aliases = ['c-info', 'crypto-5ranks', 'crypto'])
-    async def crypto_info(self, ctx):
+    @commands.command(aliases = ['crypto-top5', 'crypto-5', 'c-top5'])
+    async def crypto_top_5(self, ctx):
         data = await self.load_data()
-
-        if len(data) == 0:
-            error = discord.Embed(
-                title = 'Cryptocurrency  |  ERROR:',
-                description = 'The cryptocurrency data appears to be missing!',
-                colour = (discord.Colour.red())
-            )
-
-            await ctx.send(embed = error)
-            return
-
-
+   
         response = discord.Embed(
             title = 'Cryptocurrency  |  Top 5 Ranked Currencies:',
             description = 'The following is information on the top 5 ranked cryptocurriences.',
