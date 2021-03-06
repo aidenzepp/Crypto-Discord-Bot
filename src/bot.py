@@ -16,6 +16,21 @@ client = commands.Bot(command_prefix = '.', intents = intents)
 # -- Events --
 @client.event
 async def on_ready():
+
+    # Creates the 'ALL_USERS_INFO.json' file if it can't be found.
+    # If it is found, that means it's already been created with the format below.
+    path = 'src/hidden'
+    files = os.listdir(path)
+    if 'ALL_USERS_INFO.json' not in files:
+        info = {}
+        info['users'] = []
+
+        with open(f'{path}/ALL_USERS_INFO.json', 'w') as outfile:
+            json.dump(info, outfile, indent = 4)
+
+        print('The \'ALL_USERS_INFO.json\' has been created.')
+
+
     print('Bot is ready.')
 
 
