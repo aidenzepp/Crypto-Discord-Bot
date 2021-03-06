@@ -130,7 +130,7 @@ class Stocks(commands.Cog):
     async def crypto_top_5(self, ctx):
         data = await self.load_data()
    
-        if self.is_data_loaded() == False:
+        if await self.is_data_loaded() == False:
             error = await self.data_status_message()
             return await ctx.send(embed = error)
 
@@ -176,7 +176,7 @@ class Stocks(commands.Cog):
     async def see_crypto_info(self, ctx, *, crypto_symbols):
         data = await self.load_data()
 
-        if self.is_data_loaded() == False:
+        if await self.is_data_loaded() == False:
             error = await self.data_status_message()
             return await ctx.send(embed = error)
 
