@@ -69,6 +69,41 @@ class Stocks(commands.Cog):
         return self.data
 
 
+    async def is_data_loaded(self):
+        if (self.data == NULL) or (len(self.data) == 0):
+            return False
+        else:
+            return True
+
+    
+    async def data_status_message(self):
+        error_message = discord.Embed(
+            title = 'Cryptocurrency  |  ERROR:',
+            description = 'The cryptocurrency data appears to be missing! Please look below for some possible solutions.',
+            colour = (discord.Colour.red())
+        )
+
+        error_message.add_field(
+            name = '[1] Force Load:',
+            value = 'Try using the `load-cmcdata` command to force the data to load in again.',
+            inline = False
+        )
+
+        error_message.add_field(
+            name = '[2] Restart:',
+            value = 'Try restarting the bot. This will make the bot go through the process of loading the data from CoinMarketCap\'s servers again.',
+            inline = False
+        )
+
+        error_message.add_field(
+            name = '[3] Reload Cog:',
+            value = f'Try using the `reload (Insert Name of Cog)` command to unload the specified cog and load it back in. For this cog, the command would be `reload {self}`.',
+            inline = False
+        )
+
+        return error_message
+
+
 
     # -- Events --
 
@@ -95,6 +130,11 @@ class Stocks(commands.Cog):
     async def crypto_top_5(self, ctx):
         data = await self.load_data()
    
+        if self.is_data_loaded() == False:
+            error = await self.data_status_message()
+            return await ctx.send(embed = error)
+
+
         response = discord.Embed(
             title = 'Cryptocurrency  |  Top 5 Ranked Currencies:',
             description = 'The following is information on the top 5 ranked cryptocurriences.',
@@ -135,6 +175,11 @@ class Stocks(commands.Cog):
     @commands.command(aliases = ['see-crypto-info', 'see-cinfo', 'seecrypto'])
     async def see_crypto_info(self, ctx, *, crypto_symbols):
         data = await self.load_data()
+
+        if self.is_data_loaded() == False:
+            error = await self.data_status_message()
+            return await ctx.send(embed = error)
+            
         
         requested_symbols = crypto_symbols.upper().split(' ')
         symbols_not_found = []
