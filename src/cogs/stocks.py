@@ -274,6 +274,7 @@ class Stocks(commands.Cog):
             info = json.load(f)
             users = info['users']
 
+
         member = ctx.author
 
         requested_symbols = crypto_symbols.upper().split(' ')
@@ -324,6 +325,7 @@ class Stocks(commands.Cog):
         )
 
         await ctx.send(embed = success)
+
 
         # Symbols Not Found - Error Message
         if len(symbols_not_found) > 0:

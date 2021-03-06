@@ -154,7 +154,7 @@ class Information(commands.Cog):
         
         error = discord.Embed(
             title = f'{member.name}  |  User Info:',
-            description = 'The above user could not be found in the system. Please use the `.adduser` command to add this user to the system.',
+            description = 'The above user could not be found in the system. Please use the `adduser` command to add this user to the system.',
             colour = (discord.Colour.red())
         )
 
