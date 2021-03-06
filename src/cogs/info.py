@@ -11,7 +11,10 @@ class Information(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+
+
     # -- Events --
+
 
 
     # -- Commands --
@@ -52,6 +55,7 @@ class Information(commands.Cog):
 
 
         await ctx.send(embed = server_info)
+
 
 
 def setup(client):
