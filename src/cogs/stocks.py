@@ -179,7 +179,7 @@ class Stocks(commands.Cog):
         if self.is_data_loaded() == False:
             error = await self.data_status_message()
             return await ctx.send(embed = error)
-            
+
         
         requested_symbols = crypto_symbols.upper().split(' ')
         symbols_not_found = []
@@ -260,6 +260,87 @@ class Stocks(commands.Cog):
 
             time.sleep(0.5)
             await ctx.send(embed = not_found_error)
+
+    
+    @commands.command(aliases = ['add-crypto-self', 'add-cself', 'cryptoself'])
+    async def add_crypto_to_uinfo(self, ctx, *, crypto_symbols):
+        data = await self.load_data()
+
+        if await self.is_data_loaded() == False:
+            error = await self.data_status_message()
+            return await ctx.send(embed = error)
+
+        with open('src/hidden/ALL_USERS_INFO.json') as f:
+            info = json.load(f)
+            users = info['users']
+
+        member = ctx.author
+
+        requested_symbols = crypto_symbols.upper().split(' ')
+        symbols_not_found = []
+        symbols_found = []
+        symbols_found_info = {}
+
+        
+        for symbol in requested_symbols:
+            check = False
+
+            for currency in data:
+
+                if currency['symbol'] == symbol:
+                    name = currency['name']
+                    symbols_found_info[f'{name}'] = currency
+
+                    symbols_found.append(symbol)
+
+                    check = True
+                    continue
+            
+            if check == False:
+                symbols_not_found.append(symbol)
+                continue
+
+        
+        for user in users:
+
+            if (member.display_name, member.discriminator) == (user['name'], user['discriminator']):
+
+                user['cryptocurrencies'] = symbols_found_info
+
+        
+        with open('src/hidden/ALL_USERS_INFO.json', 'w') as outfile:
+            json.dump(info, outfile, indent = 4)
+
+
+        success = discord.Embed(
+            title = f'Cryptocurrencies Added To {member.display_name}\'s Info:',
+            description = 'The following cryptocurrencies have been added.',
+            colour = (discord.Color.blue())
+        )
+
+        success.add_field(
+            name = 'Cryptocurrencies Added:',
+            value = symbols_found
+        )
+
+        await ctx.send(embed = success)
+
+        # Symbols Not Found - Error Message
+        if len(symbols_not_found) > 0:
+
+            not_found_error = discord.Embed(
+                title = 'Cryptocurrency Information  |  ERROR:',
+                colour = (discord.Colour.red())
+            )
+
+            not_found_error.add_field(
+                name = 'Symbols Not Found:',
+                value = f'{symbols_not_found}'
+            )
+
+            time.sleep(0.5)
+            await ctx.send(embed = not_found_error)
+                
 
 
 def setup(client):
