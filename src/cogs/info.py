@@ -1,7 +1,9 @@
 from re import L
 import discord
+from discord import user
 from discord.ext import commands
 import random
+import json
 import time
 import os
 #--
@@ -55,6 +57,64 @@ class Information(commands.Cog):
 
 
         await ctx.send(embed = server_info)
+
+    
+    @commands.command(aliases = ['add-user-info', 'add-uinfo', 'adduser'])
+    async def add_user_info(self, ctx, member: discord.Member):
+        filepath = 'src/hidden/ALL_USERS_INFO.json'
+
+        with open(filepath) as f:
+            info = json.load(f)
+            users = info['users']
+
+
+        for user in users:
+
+            if (member.display_name, member.discriminator) == (user['name'], user['discriminator']):
+
+                response = discord.Embed(
+                    title = f'@{member.name}  |  User Info:',
+                    description = 'This user is already in the system.',
+                    colour = (discord.Colour.blue())
+                )
+
+                return await ctx.send(embed = response)
+
+
+        users.append({
+            'name': member.display_name,
+            'discriminator': member.discriminator,
+            'id': member.id,
+            'mention': member.mention,
+            'nickname': member.nick,
+            'colour': str(member.colour),
+            'joined_at': str(member.joined_at)
+        })
+
+        with open(filepath, 'w') as outfile:
+            json.dump(info, outfile, indent = 4)
+
+        
+        user_info = discord.Embed(
+            title = f'{member.name}  |  User Info:',
+            colour = (discord.Colour.blue())
+        )
+
+        fields = [
+            ['`Name:`', member.display_name, True],
+            ['`Discriminator:`', member.discriminator, True],
+            ['`ID:`', f'||{member.id}||', True],
+            ['Mention:', member.mention, False],
+            ['Nickname:', member.nick, True],
+            ['Colour:', f'{member.colour}', True],
+            ['Joined At:', f'{member.joined_at}', False]
+        ]
+
+        for name, value, inline in fields:
+            user_info.add_field(name = name, value = value, inline = inline)
+
+        
+        await ctx.send(embed = user_info)
 
 
 
