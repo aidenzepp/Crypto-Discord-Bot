@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from re import L
 import discord
 from discord.ext import commands
@@ -12,17 +13,13 @@ class Welcome(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    
 
-
-    # -- Events --
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        member_id = member.id
-        filepath = f'src/hidden/ALL_USERS_INFO/{member_id}.json'
-
+    # -- Functions --
+    async def create_user_info(self, member, filepath = NULL):
         info = {}
 
-        # Storing in 'user' so that specific user preferences or notifications set up separately.
+        # Storing in 'user' allows for separate entities (preferences, notifications, etc.) to be different keys.
         info['user'] = {
             'name': member.display_name,
             'discriminator': member.discriminator,
@@ -33,9 +30,24 @@ class Welcome(commands.Cog):
             'joined_at': str(member.joined_at)
         }
 
-        with open(filepath, 'w') as outfile:
-            json.dump(info, outfile, indent = 4)
-        
+        if filepath != NULL:
+            with open(filepath, 'w') as outfile:
+                json.dump(info, outfile, indent = 4)
+           
+            return
+
+        return info
+
+
+
+    # -- Events --
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        member_id = member.id
+        filepath = f'src/hidden/ALL_USERS_INFO/{member_id}.json'
+
+        await self.create_user_info(member, filepath)
+
 
 
     # -- Commands --
