@@ -17,12 +17,13 @@ class Welcome(commands.Cog):
     # -- Events --
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        filepath = 'src/hidden/ALL_USERS_INFO.json'
+        member_id = member.id
+        filepath = f'src/hidden/ALL_USERS_INFO/{member_id}.json'
 
-        with open(filepath) as f:
-            info = json.load(f)
+        info = {}
 
-        info['users'].append({
+        # Storing in 'user' so that specific user preferences or notifications set up separately.
+        info['user'] = {
             'name': member.display_name,
             'discriminator': member.discriminator,
             'id': member.id,
@@ -30,12 +31,11 @@ class Welcome(commands.Cog):
             'nickname': member.nick,
             'colour': str(member.colour),
             'joined_at': str(member.joined_at)
-        })
+        }
 
         with open(filepath, 'w') as outfile:
             json.dump(info, outfile, indent = 4)
         
-
 
 
     # -- Commands --
