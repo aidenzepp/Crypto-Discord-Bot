@@ -55,6 +55,23 @@ Functions List:
             * discord.Colour.blue()
         > cmcdata_error_msg(solutions)
             * solutions = False
+
+    - USER -
+        > user_filename(member, filetype)
+            * member: type() == discord.Member
+            * filetype = 'json'
+        > user_filepath(member)
+            * member: type() == discord.Member
+        > user_info(member)
+            * member: type() == discord.Member
+        > create_user_contents(member)
+            * member: type() == discord.Member
+        > [ASYNC] user_info_msg(member)
+            * member: type() == discord.Member
+        > [ASYNC] make_user(member)
+            * member: type() == discord.Member
+        > [ASYNC] find_user(member)
+            * member: type() == discord.Member
 '''
 
 class Helper(commands.Cog):
@@ -206,6 +223,76 @@ class Helper(commands.Cog):
 
         msg = self.create_embed_msg(header, fields, colour = discord.Colour.red())
         return msg
+
+    
+    # -- User --
+    @staticmethod
+    def user_filename(member, filetype = 'json'):
+        return f'{member.id}.{filetype}'
+
+    def user_filepath(self, member):
+        return '{users_folder}/{filename}'.format(users_folder = self.usersinfo_dir, filename = self.user_filename(member))
+
+    @staticmethod
+    def user_info(member):
+        info = {
+            'name': member.display_name,
+            'discriminator': member.discriminator,
+            'id': member.id,
+            'mention': member.mention,
+            'nickname': member.nick,
+            'colour': str(member.colour),
+            'joined_at': str(member.joined_at)
+        }
+        return info
+
+    def create_user_contents(self, member):
+        contents = {}
+        contents['user'] = self.user_info(member)
+        contents['crypto'] = []
+        return contents
+
+    async def user_info_msg(self, member):
+        info = self.user_info(member)
+        header = f'{member}  |  User Information:'
+        fields = []
+
+        keys = [key for key in info.keys()]
+        for i in range(len(keys)):
+            name = f'{keys[i]}:'.title()
+            value = info.get(keys[i])
+            inline = True
+
+            if i < 2: # Highlight 1st and 2nd keys.
+                name = f'`{name}`'
+            elif i == 2: # Highlight 3rd key, make uppercase, and hide value.
+                name = f'`{name.upper()}`'
+                value = f'||{value}||'
+            elif (i == 3) or (i == 6): # Give 4th and 6th keys 'inline = False'.
+                inline = False
+        
+            fields.append([name, value, inline])
+        
+        msg = self.create_embed_msg(header, fields)
+        return msg
+
+    async def make_user(self, member):
+        info = self.create_user_contents(member)
+        filepath = self.user_filepath(member)
+        self.json_dump(info, filepath)
+        return info
+
+    async def find_user(self, member):
+        files = os.listdir(self.usersinfo_dir)
+        user_filename = self.user_filename(member)
+        user_filepath = self.user_filepath(member)
+
+        if user_filename in files:
+            info = self.json_load(user_filepath)
+            print(f'{member}\'s file found. Returning info...')
+            return info
+        else:
+            return None
 
     
 # -- Cog Setup --
