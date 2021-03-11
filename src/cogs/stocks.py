@@ -73,8 +73,9 @@ class Stocks(commands.Cog):
                 .format(name = name, symbol = symbol, rwc = self.helper.rwc, price = price, lastupd_dtconv = lastupd_dtconv),
                 False
             ])
-
-        top_5 = self.helper.create_embed_msg(header, fields)
+        
+        footer = 'Last Updated Format: DD MMMM, YYYY - [HH:MM:SS]'
+        top_5 = self.helper.create_embed_msg(header, fields, footer)
         await ctx.send(embed = top_5)
 
     @commands.command(aliases = ['see-crypto-info', 'see-cinfo', 'seecrypto'])
