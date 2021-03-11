@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+import datetime as dt
 import json
 import os
 #--
@@ -100,6 +101,7 @@ class Helper(commands.Cog):
         self.hidden = 'src/hidden' # Path for the 'hidden' folder.
         self.cogs = 'src/cogs' # Path for the 'cogs' folder.
         self.data = None
+        self.rwc = 'USD' # 'rwc' = Real World Currency; the currency that the cryptocurrency will be converted to.
 
         # CoinMarketCap API Documentation - Quickstart Guide's Format
         url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
@@ -107,7 +109,7 @@ class Helper(commands.Cog):
         parameters = {
             'start': '1',
             'limit': '100',
-            'convert': 'USD'
+            'convert': self.rwc
         }
 
         headers = {
@@ -136,6 +138,16 @@ class Helper(commands.Cog):
         pass
 
 
+    # -- File & Folder Paths --
+    @property
+    def cmc_filepath(self):
+        return f'{self.hidden}/CMC_data.json'
+
+    @property
+    def usersinfo_dir(self):
+        return f'{self.hidden}/ALL_USERS_INFO'
+
+
     # -- JSON --
     @staticmethod
     def json_load(filepath = None):
@@ -158,14 +170,12 @@ class Helper(commands.Cog):
             print('Input could not be dumped to filepath. Check command call.')
 
     
-    # -- File & Folder Paths --
-    @property
-    def cmc_filepath(self):
-        return f'{self.hidden}/CMC_data.json'
-
-    @property
-    def usersinfo_dir(self):
-        return f'{self.hidden}/ALL_USERS_INFO'
+    # -- DateTime --
+    @staticmethod
+    def dtconvert_cmc(input):
+        dt_obj = dt.datetime.strptime(input[:-5], '%Y-%m-%dT%H:%M:%S')
+        converted = dt.datetime.strftime(dt_obj, '%d %b, %Y - [%H:%M:%S]')
+        return converted
 
 
     # -- Discord Embed Messages --

@@ -60,16 +60,17 @@ class Stocks(commands.Cog):
             last_updated = currency['last_updated']
 
             # Setting price to 2 decimal places.
-            price_USD = round(currency['quote']['USD']['price'], 2)
+            price = round(currency['quote'][self.helper.rwc]['price'], 2)
+            lastupd_dtconv = self.helper.dtconvert_cmc(last_updated)
 
             fields.append([
                 f'Rank {rank}:',
                 '''
                 `Name:` **{name}**
                 `Symbol:` {symbol}
-                `Price [USD]:` ${price_USD}
-                `Last Updated:` {last_updated}'''
-                .format(name = name, symbol = symbol, price_USD = price_USD, last_updated = last_updated),
+                `[{rwc}] Price:` ${price}
+                `Last Updated:` {lastupd_dtconv}'''
+                .format(name = name, symbol = symbol, rwc = self.helper.rwc, price = price, lastupd_dtconv = lastupd_dtconv),
                 False
             ])
 
@@ -106,14 +107,14 @@ class Stocks(commands.Cog):
                     header = f'Cryptocurrency Information: [{symbol}]  |  {i} of {len(requested_symbols)}'
 
                     # Setting price to 2 decimal places.
-                    price_USD = round(currency['quote']['USD']['price'], 2)
+                    price = round(currency['quote'][self.helper.rwc]['price'], 2)
 
                     fields = [
                         ['`Name:`', currency['name'], True],
                         ['`Symbol:`', currency['symbol'], True],
                         ['`ID:`', currency['id'], True],
-                        ['`Price [USD]:`', f'${price_USD}', True],
-                        ['`[USD] 24H Volume:`', currency['quote']['USD']['volume_24h'], True],
+                        [f'`[{self.helper.rwc}] Price:`', f'${price}', True],
+                        [f'`[{self.helper.rwc}] 24H Volume:`', currency['quote'][self.helper.rwc]['volume_24h'], True],
                         [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
                         ['Date Added:', currency['date_added'], True],
                         ['CMC Rank:', currency['cmc_rank'], True],
