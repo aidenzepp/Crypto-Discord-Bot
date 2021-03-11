@@ -72,6 +72,14 @@ Functions List:
             * member: type() == discord.Member
         > [ASYNC] find_user(member)
             * member: type() == discord.Member
+
+    - COINMARKETCAP -
+        > load_cmcdata()
+        > check_cmcdata()
+        > check_and_load()
+        > add_crypto_to_user(member, cryptos)
+            * member: type() == discord.Member
+            * cryptos = information of cryptocurrencies being added to the user's info file; type() == dict
 '''
 
 class Helper(commands.Cog):
@@ -293,6 +301,34 @@ class Helper(commands.Cog):
             return info
         else:
             return None
+
+    
+    # -- CoinMarketCap --
+    async def load_cmcdata(self):
+        if self.data == None:
+            all_data = self.json_load(self.cmc_filepath)
+            self.data = all_data['data']
+        return self.data
+
+    async def check_cmcdata(self):
+        if (self.data == None) or (len(self.data) == 0):
+            return False
+        else:
+            return True
+
+    async def check_and_load(self):
+        if await self.check_cmcdata() == False:
+            print('Data wasn\'t loaded. Loading data now...')
+            return await self.load_cmcdata()
+
+    async def add_crypto_to_user(self, member, cryptos):
+        # Finds user's info file, loads it, attaches
+        # cryptocurrency info to user's info, then
+        # dumps the info's contents back into file.
+        filepath = self.user_filepath(member)
+        info = self.json_load(filepath)
+        info['crypto'] = cryptos
+        self.json_dump(info, filepath)
 
     
 # -- Cog Setup --
