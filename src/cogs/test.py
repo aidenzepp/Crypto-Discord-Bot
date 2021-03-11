@@ -8,18 +8,15 @@ class Test(commands.Cog):
         self.client = client
 
 
-
     # -- Commands --
     @commands.command()
     async def test(self, ctx):
         await ctx.send('Command heard. Test successful.')
 
-    
     @commands.command(aliases = ['emoji'])
     async def emoji_test(self, ctx):
         await ctx.send(':white_check_mark:')
 
-    
     @commands.command(aliases = ['embed'])
     async def embed_test(self, ctx):
         embed = discord.Embed(
@@ -60,7 +57,6 @@ class Test(commands.Cog):
         )
 
         await ctx.send(embed = embed)
-
 
 
 def setup(client):
