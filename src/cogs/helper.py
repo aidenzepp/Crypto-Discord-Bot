@@ -79,6 +79,28 @@ class Helper(commands.Cog):
         pass
 
 
+    # -- JSON --
+    @staticmethod
+    def json_load(filepath = None):
+        if filepath != None:
+            with open(filepath, 'r') as f:
+                contents = json.load(f)
+            print('File\'s contents loaded.')
+            return contents
+        else:
+            print('Missing contents. Check command call.')
+            return None
+        
+    @staticmethod
+    def json_dump(input = None, filepath = None, indent = 4):
+        if (input, filepath) != None:
+            with open(filepath, 'w') as outfile:
+                json.dump(input, outfile, indent = indent)
+            print('Input dumped to filepath.')
+        else:
+            print('Input could not be dumped to filepath. Check command call.')
+
+
     
 # -- Cog Setup --
 def setup(client):
