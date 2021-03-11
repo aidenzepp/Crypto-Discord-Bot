@@ -25,6 +25,19 @@ III. CoinMarketCap Data:
 
 [ ~~~ ]
 
+Self Attributes:
+    > self.client = client
+    > self.hidden = 'src/hidden'
+    > self.cogs = 'src/cogs'
+    > self.data = data
+        * data: the cryptocurrency data from CoinMarketCap; type() == dict
+    > self.cmc_filepath = 'src/hidden/CMC_data.json'
+        * True Return Value = f'{self.hidden}/CMC_data.json'
+        * Found under '-- Files & Folder Paths --' section.
+    > self.usersinfo_dir = 'src/hidden/ALL_USERS_INFO'
+        * True Return Value = f'{self.hidden}/ALL_USERS_INFO'
+        * Found under '-- Files & Folder Paths --' section.
+
 Functions List:
     - JSON -
         > json_load(filepath)
@@ -106,6 +119,15 @@ class Helper(commands.Cog):
         else:
             print('Input could not be dumped to filepath. Check command call.')
 
+    
+    # -- File & Folder Paths --
+    @property
+    def cmc_filepath(self):
+        return f'{self.hidden}/CMC_data.json'
+
+    @property
+    def usersinfo_dir(self):
+        return f'{self.hidden}/ALL_USERS_INFO'
 
     
 # -- Cog Setup --
