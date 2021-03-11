@@ -46,6 +46,15 @@ Functions List:
             * input = None
             * filepath = None
             * indent = 4
+
+    - DISCORD -
+        > create_embed_message(header, fields, footer, colour)
+            * header = None
+            * fields = None
+            * footer = None
+            * discord.Colour.blue()
+        > cmcdata_error_msg(solutions)
+            * solutions = False
 '''
 
 class Helper(commands.Cog):
@@ -128,6 +137,75 @@ class Helper(commands.Cog):
     @property
     def usersinfo_dir(self):
         return f'{self.hidden}/ALL_USERS_INFO'
+
+
+    # -- Discord Embed Messages --
+    @staticmethod
+    def create_embed_msg(header = None, fields = None, footer = None, colour = discord.Colour.blue()):
+        if (header == None) or (len(header) == 0):
+            print('The header values have been left blank. Check command call.')
+            return
+
+        # Check if there's a description.
+        # Format is incorrect if 'title = header' but 'type(header) == list'.
+        if (type(header) == list) and (len(header) > 1):
+            title = header[0]
+            description = header[1]
+
+            msg = discord.Embed(
+                title = title,
+                description = description,
+                colour = colour
+            )
+        elif (type(header) == list) and (len(header) == 1):
+            title = header[0]
+
+            msg = discord.Embed(
+                title = title,
+                colour = colour
+            )
+        else:
+            title = header
+
+            msg = discord.Embed(
+                title = title,
+                colour = colour
+            )
+        # --
+
+        # Check if there are fields.
+        if fields != None:
+            for field in fields:
+                name, value, inline = field
+                msg.add_field(name = name, value = value, inline = inline)
+
+        # Check if there's a footer.
+        if footer != None:
+            msg.set_footer(text = footer)
+
+        return msg
+
+    def cmcdata_error_msg(self, solutions = False):
+        # Check if the error message should contain possible solutions.
+        if solutions:
+            header = [
+                'Cryptocurrency  |  ERROR:',
+                'The cryptocurrency data appears to be missing!'
+            ]
+
+            fields = [
+                ['[1] Force Load:', 'Try using the `load-cmcdata` command to force the data to load in again.', False],
+                ['[2] Restart:', 'Try restarting the bot. This will make the bot go through the process of loading the data from CoinMarketCap\'s servers again.', False],
+                ['[3] Reload Cog:', 'Try using the `reload {Insert Name of Cog}` command to unload the specified cog and load it back in. For this cog, the command would be `reload stocks`.', False]
+            ]
+        else:
+            header = [
+                'Cryptocurrency  |  ERROR:',
+                'The cryptocurrency data appears to be missing!'
+            ]
+
+        msg = self.create_embed_msg(header, fields, colour = discord.Colour.red())
+        return msg
 
     
 # -- Cog Setup --
