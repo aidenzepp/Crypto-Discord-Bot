@@ -31,6 +31,10 @@ Self Attributes:
     > self.cogs = 'src/cogs'
     > self.data = data
         * data: the cryptocurrency data from CoinMarketCap; type() == dict
+    > self.keys = keys
+        * keys: the API keys stored in 'src/secrets.json'; type() == dict
+        * keys['discord']: the Discord API key; type() == str
+        * keys['coinmarketcap']: the CoinMarketCap API key; type() == str
     > self.cmc_filepath = 'src/hidden/CMC_data.json'
         * True Return Value = f'{self.hidden}/CMC_data.json'
         * Found under '-- Files & Folder Paths --' section.
