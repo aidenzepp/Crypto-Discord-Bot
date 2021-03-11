@@ -172,9 +172,29 @@ class Helper(commands.Cog):
     
     # -- DateTime --
     @staticmethod
-    def dtconvert_cmc(input):
-        dt_obj = dt.datetime.strptime(input[:-5], '%Y-%m-%dT%H:%M:%S')
-        converted = dt.datetime.strftime(dt_obj, '%d %b, %Y - [%H:%M:%S]')
+    def dtformat_default():
+        return '%Y-%m-%dT%H:%M:%S'
+
+    @staticmethod
+    def dtformat_return(description = False):
+        if description:
+            return 'Time Format: DD MMMM, YYYY - [HH:MM:SS]'
+        else:
+            return '%d %b, %Y - [%H:%M:%S]'
+
+    def dtconvert(self, input, **kwargs):
+        if kwargs.get('type') == 'dis':
+            dt_obj = dt.datetime.strptime(input[:-7], '%Y-%m-%d %H:%M:%S')
+        elif kwargs.get('type') == 'cmc':
+            dt_obj = dt.datetime.strptime(input[:-5], self.dtformat_default())
+        else:
+            dt_obj = dt.datetime.strptime(input, self.dtformat_default())
+
+        if kwargs.get('format') == None:
+            converted = dt.datetime.strftime(dt_obj, self.dtformat_return())
+        else:
+            converted = dt.datetime.strftime(dt_obj, kwargs.get('format'))
+        
         return converted
 
 

@@ -2,8 +2,6 @@ import os
 from os import error
 import discord
 from discord.ext import commands
-from requests import Request, Session
-from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 from decimal import *
 import json
 import time
@@ -61,7 +59,7 @@ class Stocks(commands.Cog):
 
             # Setting price to 2 decimal places.
             price = round(currency['quote'][self.helper.rwc]['price'], 2)
-            lastupd_dtconv = self.helper.dtconvert_cmc(last_updated)
+            lastupd_dtconv = self.helper.dtconvert(last_updated, type = 'cmc')
 
             fields.append([
                 f'Rank {rank}:',
@@ -74,7 +72,7 @@ class Stocks(commands.Cog):
                 False
             ])
         
-        footer = 'Last Updated Format: DD MMMM, YYYY - [HH:MM:SS]'
+        footer = self.helper.dtformat_return(True)
         top_5 = self.helper.create_embed_msg(header, fields, footer)
         await ctx.send(embed = top_5)
 
@@ -109,6 +107,8 @@ class Stocks(commands.Cog):
 
                     # Setting price to 2 decimal places.
                     price = round(currency['quote'][self.helper.rwc]['price'], 2)
+                    dateadded_dtconv = self.helper.dtconvert(currency['date_added'], type = 'cmc')
+                    lastupd_dtconv = self.helper.dtconvert(currency['last_updated'], type = 'cmc')
 
                     fields = [
                         ['`Name:`', currency['name'], True],
@@ -117,17 +117,18 @@ class Stocks(commands.Cog):
                         [f'`[{self.helper.rwc}] Price:`', f'${price}', True],
                         [f'`[{self.helper.rwc}] 24H Volume:`', currency['quote'][self.helper.rwc]['volume_24h'], True],
                         [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
-                        ['Date Added:', currency['date_added'], True],
+                        ['Date Added:', dateadded_dtconv, True],
                         ['CMC Rank:', currency['cmc_rank'], True],
                         ['Number of Market Pairs:', currency['num_market_pairs'], False],
                         ['Total Supply:', currency['total_supply'], True],
                         ['Circulating Supply:', currency['circulating_supply'], True],
                         ['Maximum Supply:', currency['max_supply'], True],
                         [f'{chr(173)}', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
-                        ['Last Updated:', currency['last_updated'], False]
+                        ['Last Updated:', lastupd_dtconv, False]
                     ]
 
-                    currency_info = self.helper.create_embed_msg(header, fields)
+                    footer = self.helper.dtformat_return(True)
+                    currency_info = self.helper.create_embed_msg(header, fields, footer)
 
                     verify = True
                     i += 1
