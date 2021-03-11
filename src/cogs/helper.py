@@ -78,10 +78,10 @@ Functions List:
             * member: type() == discord.Member
 
     - COINMARKETCAP -
-        > load_cmcdata()
-        > check_cmcdata()
-        > check_and_load()
-        > add_crypto_to_user(member, cryptos)
+        > [ASYNC] load_cmcdata()
+        > [ASYNC] check_cmcdata()
+        > [ASYNC] check_and_load()
+        > [ASYNC] add_crypto_to_user(member, cryptos)
             * member: type() == discord.Member
             * cryptos = information of cryptocurrencies being added to the user's info file; type() == dict
 '''
