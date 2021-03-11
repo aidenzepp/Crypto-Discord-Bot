@@ -1,22 +1,20 @@
-from re import L
 import discord
 from discord import user
 from discord.ext import commands
-import random
 import json
-import time
 import os
+
+from cogs.helper import Helper
 #--
 
 class Information(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-
+        self.helper = Helper(client)
 
 
     # -- Events --
-
 
 
     # -- Commands --
@@ -30,19 +28,10 @@ class Information(commands.Cog):
         member_count = ctx.guild.member_count
         icon = ctx.guild.icon_url
 
-        # Deleting the command message.
-        await ctx.channel.purge(limit = 1)
-
-
-        server_info = discord.Embed(
-            title = server_name + ' | Server Information:',
-            description = description,
-            colour = (discord.Colour.blue())
-        )
-
-        server_info.set_thumbnail(url = icon)
-        
-        server_info.set_footer(text = f'Command called by: @{ctx.author}.')
+        header = [
+            f'{server_name}  |  Server Information:',
+            description
+        ]
 
         fields = [
             ['Owner:', owner, False],
@@ -51,116 +40,47 @@ class Information(commands.Cog):
             ['Member Count:', member_count, True]
         ]
 
-        # Adding multiple fields.
-        for name, value, inline in fields:
-            server_info.add_field(name = name, value = value, inline = inline)
+        footer = f'Command called by: @{ctx.author}.'
 
-
+        server_info = self.helper.create_embed_msg(header, fields, footer)
+        server_info.set_thumbnail(url = icon)
         await ctx.send(embed = server_info)
-
     
     @commands.command(aliases = ['add-user-info', 'add-uinfo', 'adduser'])
     async def add_user_info(self, ctx, member: discord.Member):
-        filepath = 'src/hidden/ALL_USERS_INFO.json'
+        # Check if the user's info file has already been created.
+        verify = await self.helper.find_user(member)
+        if verify != None:
+            header = [
+                f'{member}  |  User Info:',
+                'This user is already in the system.'
+            ]
+            response = self.helper.create_embed_msg(header)
+            return await ctx.send(embed = response)
 
-        with open(filepath) as f:
-            info = json.load(f)
-            users = info['users']
+        await self.helper.make_user(member)
 
-
-        for user in users:
-
-            if (member.display_name, member.discriminator) == (user['name'], user['discriminator']):
-
-                response = discord.Embed(
-                    title = f'{member.name}  |  User Info:',
-                    description = 'This user is already in the system.',
-                    colour = (discord.Colour.blue())
-                )
-
-                return await ctx.send(embed = response)
-
-
-        users.append({
-            'name': member.display_name,
-            'discriminator': member.discriminator,
-            'id': member.id,
-            'mention': member.mention,
-            'nickname': member.nick,
-            'colour': str(member.colour),
-            'joined_at': str(member.joined_at)
-        })
-
-        with open(filepath, 'w') as outfile:
-            json.dump(info, outfile, indent = 4)
-
-        
-        user_info = discord.Embed(
-            title = f'{member.name}  |  User Info:',
-            colour = (discord.Colour.blue())
-        )
-
-        fields = [
-            ['`Name:`', member.display_name, True],
-            ['`Discriminator:`', member.discriminator, True],
-            ['`ID:`', f'||{member.id}||', True],
-            ['Mention:', member.mention, False],
-            ['Nickname:', member.nick, True],
-            ['Colour:', f'{member.colour}', True],
-            ['Joined At:', f'{member.joined_at}', False]
-        ]
-
-        for name, value, inline in fields:
-            user_info.add_field(name = name, value = value, inline = inline)
-
-        
+        # Sends a message w/ user's info.
+        user_info = await self.helper.user_info_msg(member)
         await ctx.send(embed = user_info)
 
-    
     @commands.command(aliases = ['see-user-info', 'see-uinfo', 'seeuser'])
     async def see_user_info(self, ctx, member: discord.Member):
-        filepath = 'src/hidden/ALL_USERS_INFO.json'
+        # Sends error message if the user's info file can not be found.
+        verify = await self.helper.find_user(member)
+        if verify == None:
+            header = [
+                f'{member}  |  User Info:',
+                'The above user could not be found in the system. Please use the `adduser` command to add this user to the system.'
+            ]
+            error = self.helper.create_embed_msg(header, colour = discord.Colour.red())
+            return await ctx.send(embed = error)
 
-        with open(filepath) as f:
-            info = json.load(f)
-            users = info['users']
-
-        
-        for user in users:
-
-            if (member.display_name, member.discriminator) == (user['name'], user['discriminator']):
-
-                user_info = discord.Embed(
-                    title = f'{member.name}  |  User Info:',
-                    colour = (discord.Colour.blue())
-                )
-
-                fields = [
-                    ['`Name:`', member.display_name, True],
-                    ['`Discriminator:`', member.discriminator, True],
-                    ['`ID:`', f'||{member.id}||', True],
-                    ['Mention:', member.mention, False],
-                    ['Nickname:', member.nick, True],
-                    ['Colour:', f'{member.colour}', True],
-                    ['Joined At:', f'{member.joined_at}', False]
-                ]
-
-                for name, value, inline in fields:
-                    user_info.add_field(name = name, value = value, inline = inline)
-
-                
-                return await ctx.send(embed = user_info)
-
-        
-        error = discord.Embed(
-            title = f'{member.name}  |  User Info:',
-            description = 'The above user could not be found in the system. Please use the `adduser` command to add this user to the system.',
-            colour = (discord.Colour.red())
-        )
-
-        await ctx.send(embed = error)
+        # Sends a message w/ user's info.
+        user_info = await self.helper.user_info_msg(member)
+        await ctx.send(embed = user_info)
 
 
-
+# -- Cog Setup --
 def setup(client):
     client.add_cog(Information(client))
