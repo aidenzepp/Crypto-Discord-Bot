@@ -26,7 +26,13 @@ III. CoinMarketCap Data:
 [ ~~~ ]
 
 Functions List:
-> n/a
+    - JSON -
+        > json_load(filepath)
+            * filepath = None
+        > json_dump(input, filepath, indent)
+            * input = None
+            * filepath = None
+            * indent = 4
 '''
 
 class Helper(commands.Cog):
