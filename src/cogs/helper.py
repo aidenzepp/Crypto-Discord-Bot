@@ -82,6 +82,7 @@ Functions List:
             * **kwargs:
                 1. type = 'dis': used to take the input of a Discord-formatted DateTime string
                 2. type = 'cmc': used to take the input of a CMC-formatted DateTime string
+                3. format = ?: specify the format the new DateTime string should take on
 
     - DISCORD -
         > [ASYNC] check_server()
@@ -228,12 +229,13 @@ class Helper(commands.Cog):
     # -- Math --
     @staticmethod
     async def prcnt_change(diff, denom, round_output = True, round_val = 2):
-        # Check if the denominator is '0'.
+        # Check if the denominator is zero.
         try:
             prcnt = (diff / denom) * 100
         except ZeroDivisionError:
             prcnt = None
 
+        # If it needs to round and 'prcnt' didn't have a 'ZeroDivisionError' issue, round 'prcnt'.
         if round_output and (prcnt != None):
             prcnt_rounded = round(prcnt, round_val)
             return prcnt_rounded
@@ -242,20 +244,25 @@ class Helper(commands.Cog):
 
     async def compare_diff_val_pairs(self, values, round_output = True, calc_prcnt = False, round_val = 2):
         val_1, val_2 = values
+
+        # Check if 'val_2' is 'None'.
         try:
             diff = val_2 - val_1
             diff_rounded = round(diff, round_val)
             prcnt_change = await self.prcnt_change(diff, val_1, round_output, round_val)
         except TypeError:
+            # Return 'diff' as 'None'. If 'calc_prcnt == True', return 'prcnt_change' as None along w/ 'diff'.
             diff = None
-            prcnt_change = None
-            return diff, prcnt_change
+            if calc_prcnt:
+                prcnt_change = None
+                return diff, prcnt_change
+            return diff
 
-        if round_output and calc_prcnt:
+        if round_output and calc_prcnt: # If it needs to round and calculate the percent.
             return diff_rounded, prcnt_change
-        elif round_output:
+        elif round_output: # If it only needs to round.
             return diff_rounded
-        elif prcnt_change:
+        elif prcnt_change: # If it needs 'diff' w/o rounding and to calculate the percent.
             return diff, prcnt_change
         else:
             return diff
@@ -274,16 +281,16 @@ class Helper(commands.Cog):
             return '%d %b, %Y - [%H:%M:%S]'
 
     def dtconvert(self, input, **kwargs):
-        if kwargs.get('type') == 'dis':
+        if kwargs.get('type') == 'dis': # If the input's format is from Discord.
             dt_obj = dt.datetime.strptime(input[:-7], '%Y-%m-%d %H:%M:%S')
-        elif kwargs.get('type') == 'cmc':
+        elif kwargs.get('type') == 'cmc': # If the input's format is from CoinMarketCap.
             dt_obj = dt.datetime.strptime(input[:-5], self.dtformat_default())
         else:
             dt_obj = dt.datetime.strptime(input, self.dtformat_default())
 
-        if kwargs.get('format') == None:
+        if kwargs.get('format') == None: # If there is no specific format needed.
             converted = dt.datetime.strftime(dt_obj, self.dtformat_return())
-        else:
+        else: # If there needs to be a specific format.
             converted = dt.datetime.strftime(dt_obj, kwargs.get('format'))
         
         return converted
@@ -303,12 +310,13 @@ class Helper(commands.Cog):
 
     @staticmethod
     def create_embed_msg(header = None, fields = None, footer = None, colour = discord.Colour.blue()):
+        # Check if a 'header' was provided.
         if (header == None) or (len(header) == 0):
             print('The header values have been left blank. Check command call.')
             return
 
         # Check if there's a description.
-        # Format is incorrect if 'title = header' but 'type(header) == list'.
+        # Resulting format is incorrect if 'title = header' but 'type(header) == list'.
         if (type(header) == list) and (len(header) > 1):
             title = header[0]
             description = header[1]
@@ -413,12 +421,15 @@ class Helper(commands.Cog):
             value = info.get(keys[i])
             inline = True
 
-            if i < 2: # Highlight 1st and 2nd keys.
+            if i < 2: # Highlight 1st and 2nd keys ('name', 'discriminator').
                 name = f'`{name}`'
-            elif i == 2: # Highlight 3rd key, make uppercase, and hide value.
+            elif i == 2: # Highlight 3rd key ('id'), make uppercase, and hide value.
                 name = f'`{name.upper()}`'
                 value = f'||{value}||'
-            elif (i == 3) or (i == 6): # Give 4th and 6th keys 'inline = False'.
+            elif i == 3: # Give 4th key ('mention') 'inline = False'.
+                inline = False
+            elif i == 6: # Give 6th key ('joined_at') a proper title and 'inline = False'.
+                name = 'Joined At:' 
                 inline = False
         
             fields.append([name, value, inline])
@@ -427,8 +438,11 @@ class Helper(commands.Cog):
         return msg
 
     async def make_user(self, member):
+        # 1. Create the user-info contents for the user's file.
         info = self.create_user_contents(member)
+        # 2. Get the string for the user's file path.
         filepath = self.user_filepath(member)
+        # 3. Dump 'info' in a new JSON file. 
         self.json_dump(info, filepath)
         return info
 
@@ -469,11 +483,16 @@ class Helper(commands.Cog):
         found = []
         found_info = {}
 
+        # For each crypto-symbol in the user's requested crypto-symbols...
         for symbol in symbols:
+            # Guarantees a symbol not in 'self.data' doesn't pass through.
             verify = False
 
             for currency in self.data:
+                # If the currency matches a user's requested symbol...
                 if currency['symbol'] == symbol:
+                    # Set a key in 'found_info' to the currency's name.
+                    # Set the key's value to the info of the currency. 
                     name = currency['name']
                     found_info[name] = currency
                     found.append([name, symbol])
@@ -481,6 +500,7 @@ class Helper(commands.Cog):
                     verify = True
                     continue
             
+            # Verify if none of the currencies' symbols matched the requested symbol.
             if verify == False:
                 not_found.append(symbol)
                 continue
@@ -515,6 +535,8 @@ class Helper(commands.Cog):
         found_msg = self.create_embed_msg(header)
         messages.append(found_msg)
 
+        # Creates an 'error' message if 'not_found' contains any
+        # symbols that couldn't be found in 'self.data'.
         if len(not_found) > 0:
             error = await self.symbols_notfound_msg(not_found)
             messages.append(error)
@@ -526,11 +548,16 @@ class Helper(commands.Cog):
         messages = []
         i = 1
 
+        # For each pair (name, symbol) in 'found'...
         for name, symbol in found:
+            # 'info' equals the value of the key in 'found_info' that matches 'name'.
             info = found_info[name]
 
             # Setting price to 2 decimal places.
             price = round(info['quote'][self.rwc]['price'], 2)
+
+            # Convert date/time strings from the cryptocurrencies' info
+            # into newly-formatted 'DateTime' strings.
             dateadded_dtconv = self.dtconvert(info['date_added'], type = 'cmc')
             lastupd_dtconv = self.dtconvert(info['last_updated'], type = 'cmc')
 
@@ -558,6 +585,8 @@ class Helper(commands.Cog):
             i += 1
             messages.append(info)
         
+        # Creates an 'error' message if 'not_found' contains any
+        # symbols that couldn't be found in 'self.data'.
         if len(not_found) > 0:
             error = await self.symbols_notfound_msg(not_found)
             messages.append(error)
@@ -603,41 +632,52 @@ class Helper(commands.Cog):
         return top5
 
     async def add_crypto_to_user(self, member, cryptos):
-        # Finds user's info file, loads it, attaches
-        # cryptocurrency info to user's info, then
-        # dumps the info's contents back into file.
+        # 1. Find the specified member's info file path.
         filepath = self.user_filepath(member)
+        # 2. Load the member's info.
         info = self.json_load(filepath)
+        # 3. Update the 'crypto' key's value to include 'cryptos'.
         info['crypto'].update(cryptos)
+        # 4. Dump 'info' back into the member's info file.
         self.json_dump(info, filepath)
 
     async def compare_crypto(self, member, symbols):
+        # Find the user's info.
         uinfo = await self.find_user(member)
+        # Store the 'crypto' key's value (cryptocurrencies' info) in 'currencies'.
         currencies = uinfo['crypto']
+        # Gather the currencies found and their info, and the ones not found in 'self.data'.
         found, found_info, not_found = await self.find_crypto_info(symbols)
+        # Stores the currencies not in the user's info file.
         not_in_uinfo = []
-
         # Contains all the formatted/altered information for each currency.
         special_info_all = []
 
+        # For each currency in the keys of 'found_info' (e.g. 'Bitcoin')...
         for currency in found_info.keys():
+            # Guarantees a symbol not in 'self.data' doesn't pass through.
             verify = False
 
             if currency in currencies:
+                # Cryptocurrency Information
                 currency = currencies[currency]
                 symbol = currency['symbol']
                 name = currency['name']
                 id = currency['id']
                 name_finfo = found_info[name]
+                # --
 
+                # Cryptocurrency information being stored in 'sinfo' dict.,
+                # which is stored in 'special_info_all'.
                 sinfo = {}
                 sinfo['symbol'] = symbol
                 sinfo['name'] = name
                 sinfo['id'] = id
+                # --
 
-                # Setting "price" to 2 decimal places. Comparing "price" total differences.
-                price_uinfo = round(currency['quote'][self.rwc]['price'], 2)
-                price_finfo = round(name_finfo['quote'][self.rwc]['price'], 2)
+                # Comparing "price" total differences.
+                price_uinfo = currency['quote'][self.rwc]['price']
+                price_finfo = name_finfo['quote'][self.rwc]['price']
                 price_tdiff, price_prcnt = await self.compare_diff_val_pairs(
                     [price_uinfo, price_finfo],
                     True,
@@ -716,6 +756,7 @@ class Helper(commands.Cog):
                 special_info_all.append(sinfo)
                 continue
 
+            # Verify if the currency's info couldn't be found in the user's info file.
             if verify == False:
                 not_in_uinfo.append(currency)
                 continue
@@ -795,10 +836,12 @@ class Helper(commands.Cog):
             messages.append(info)
             i += 1
 
+        # Verify if the currency's info couldn't be found in the user's info file.
         if len(not_in_uinfo) > 0:
             error_notuinfo = await self.symbols_notuinfo_msg(not_in_uinfo)
             messages.append(error_notuinfo)
 
+        # Verify if none of the currencies' symbols matched the requested symbol.
         if len(not_found) > 0:
             error_notfound = await self.symbols_notfound_msg(not_found)
             messages.append(error_notfound)
