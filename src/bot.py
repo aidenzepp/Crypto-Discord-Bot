@@ -7,6 +7,7 @@ import json
 import os
 # --
 
+
 intents = discord.Intents.default()
 intents.members = True
 
@@ -41,7 +42,7 @@ async def reload(ctx, extension):
 # -- Load Discord API Key --
 with open('src/hidden/secrets.json') as f: 
     secrets = json.load(f)
-    api_keys = secrets['keys']
+    keys = secrets['keys']
 
 
 
@@ -55,4 +56,4 @@ for filename in os.listdir('src/cogs'):
 
 
 # -- Run --
-client.run(api_keys['discord'])
+client.run(keys['discord'])
