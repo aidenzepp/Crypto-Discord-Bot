@@ -60,7 +60,31 @@ Functions List:
             * filepath = None
             * indent = 4
 
+    - MATH -
+        > [ASYNC] prcnt_change(diff, denom, round_output, round_val)
+            * diff: the difference used for calculating percents (e.g. '((3 - 2) / 2) * 100')
+            * denom: the denominator used for calculating percents
+                (Essentially the 'original' or 'base' value that the percent is calculated off of.)
+            * round_output = True; whether or not to round the output
+            * round_val = 2; if the output is being rounded, this is the number of decimal places it's rounded to
+        > [ASYNC] compare_diff_val_pairs(values, round_output, calc_prcnt, round_val)
+            * values: the values that should have their difference calculated; type() == list
+            * round_output = True; whether or not to round the output
+            * calc_prcnt = False; whether or not to calculate the percent change
+            * round_val = 2; if the output is being rounded, this is the number of decimal places it's rounded to
+
+    - DATETIME -
+        > dtformat_default()
+        > dtformat_return(description):
+            * description = False; whether or not to provide the description version of the 'dtformat'
+        > dtconvert(input, **kwargs):
+            * input: the string that needs to be converted to a DateTime object/format; type() == str
+            * **kwargs:
+                1. type = 'dis': used to take the input of a Discord-formatted DateTime string
+                2. type = 'cmc': used to take the input of a CMC-formatted DateTime string
+
     - DISCORD -
+        > [ASYNC] check_server()
         > create_embed_message(header, fields, footer, colour)
             * header = None
             * fields = None
@@ -68,7 +92,10 @@ Functions List:
             * colour = discord.Colour.blue()
         > cmcdata_error_msg(solutions)
             * solutions = False
-        > set_server
+        > [ASYNC] send_embed_messages(ctx, messages, pause)
+            * ctx: the 'ctx' provided by the parent command calling this command
+            * messages: the embed messages that need to be sent; type() == list
+            * pause = 0.0; whether or not to pause between sending messages
 
     - USER -
         > user_filename(member, filetype)
@@ -93,11 +120,26 @@ Functions List:
         > [ASYNC] check_and_load()
         > [ASYNC] find_crypto_info(symbols)
             * symbols: the symbols of requested cryptocurrencies; type() == tuple
+        > [ASYNC] symbols_notfound_msg(not_found)
+            * not_found: a list of the cryptocurrencies that couldn't be found in the data; type() == list
+        > [ASYNC] symbols_notuinfo_msg(not_in_uinfo)
+            * not_in_uinfo: a list of the cryptocurrencies that couldn't be found in the user's info file; type() == list
+        > [ASYNC] crypto_info_msg_simple(member, found, not_found):
+            * member: type() == discord.Member
+            * found: a list of the cryptocurrencies that could be found in the data; type() == list
+            * not_found: a list of the cryptocurrencies that couldn't be found in the data; type() == list
         > [ASYNC] crypto_info_msg(symbols)
             * symbols: the symbols of requested cryptocurrencies; type() == tuple
+        > [ASYNC] crypto_top5_msg()
         > [ASYNC] add_crypto_to_user(member, cryptos)
             * member: type() == discord.Member
             * cryptos: information of cryptocurrencies being added to the user's info file; type() == dict
+        > [ASYNC] compare_crypto(member, symbols)
+            * member: type() == discord.Member
+            * symbols: the symbols of requested cryptocurrencies; type() == tuple
+        > [ASYNC] compare_crypto_msg(member, symbols)
+            * member: type() == discord.Member
+            * symbols: the symbols of requested cryptocurrencies; type() == tuple
 '''
 
 class Helper(commands.Cog):
@@ -182,6 +224,7 @@ class Helper(commands.Cog):
         else:
             print('Input could not be dumped to filepath. Check command call.')
 
+
     # -- Math --
     @staticmethod
     async def prcnt_change(diff, denom, round_output = True, round_val = 2):
@@ -191,7 +234,7 @@ class Helper(commands.Cog):
         except ZeroDivisionError:
             prcnt = None
 
-        if round and (prcnt != None):
+        if round_output and (prcnt != None):
             prcnt_rounded = round(prcnt, round_val)
             return prcnt_rounded
         else:

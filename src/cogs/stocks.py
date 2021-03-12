@@ -42,6 +42,7 @@ class Stocks(commands.Cog):
     @commands.command(aliases = ['crypto-top5', 'crypto-5', 'c-top5'])
     async def crypto_top_5(self, ctx):
         await self.helper.check_and_load()
+        
         top5 = await self.helper.crypto_top5_msg()
         await ctx.send(embed = top5)
 
