@@ -1,4 +1,5 @@
 from operator import not_
+from typing import Type
 import discord
 from discord import member
 from discord import guild
@@ -198,9 +199,14 @@ class Helper(commands.Cog):
 
     async def compare_diff_val_pairs(self, values, round_output = True, calc_prcnt = False, round_val = 2):
         val_1, val_2 = values
-        diff = val_2 - val_1
-        diff_rounded = round(diff, round_val)
-        prcnt_change = await self.prcnt_change(diff, val_1, round_output, round_val)
+        try:
+            diff = val_2 - val_1
+            diff_rounded = round(diff, round_val)
+            prcnt_change = await self.prcnt_change(diff, val_1, round_output, round_val)
+        except TypeError:
+            diff = None
+            prcnt_change = None
+            return diff, prcnt_change
 
         if round_output and calc_prcnt:
             return diff_rounded, prcnt_change
@@ -559,13 +565,15 @@ class Helper(commands.Cog):
         info['crypto'].update(cryptos)
         self.json_dump(info, filepath)
 
-    async def compare_crypto_msg(self, member, symbols):
+    async def compare_crypto(self, member, symbols):
         uinfo = await self.find_user(member)
         currencies = uinfo['crypto']
         found, found_info, not_found = await self.find_crypto_info(symbols)
         not_in_uinfo = []
-        messages = []
         i = 1
+
+        # Contains all the formatted/altered information for each currency.
+        special_info_all = []
 
         for currency in found_info.keys():
             verify = False
@@ -574,7 +582,13 @@ class Helper(commands.Cog):
                 currency = currencies[currency]
                 symbol = currency['symbol']
                 name = currency['name']
+                id = currency['id']
                 name_finfo = found_info[name]
+
+                sinfo = {}
+                sinfo['symbol'] = symbol
+                sinfo['name'] = name
+                sinfo['id'] = id
 
                 # Setting "price" to 2 decimal places. Comparing "price" total differences.
                 price_uinfo = round(currency['quote'][self.rwc]['price'], 2)
@@ -584,6 +598,7 @@ class Helper(commands.Cog):
                     True,
                     True
                 )
+                sinfo['price'] = [price_uinfo, price_finfo, price_tdiff, price_prcnt]
 
                 # Comparing "24h volume" total differences.
                 volume24h_uinfo = currency['quote'][self.rwc]['volume_24h']
@@ -593,6 +608,7 @@ class Helper(commands.Cog):
                     True,
                     True
                 )
+                sinfo['volume24h'] = [volume24h_uinfo, volume24h_finfo, volume24h_tdiff, volume24h_prcnt]
 
                 # Comparing "CMC rank" total differences.
                 cmcrank_uinfo = currency['cmc_rank']
@@ -602,6 +618,7 @@ class Helper(commands.Cog):
                     False,
                     False
                 )
+                sinfo['cmcrank'] = [cmcrank_uinfo, cmcrank_finfo, cmcrank_tdiff]
 
                 # Comparing "number of market pairs" total differences.
                 nummarkpairs_uinfo = currency['num_market_pairs']
@@ -611,6 +628,7 @@ class Helper(commands.Cog):
                     True,
                     True
                 )
+                sinfo['nummarkpairs'] = [nummarkpairs_uinfo, nummarkpairs_finfo, nummarkpairs_tdiff, nummarketpairs_prcnt]
 
                 # Comparing "total supply" total differences.
                 totalsupply_uinfo = currency['total_supply']
@@ -620,6 +638,7 @@ class Helper(commands.Cog):
                     True,
                     True
                 )
+                sinfo['totalsupply'] = [totalsupply_uinfo, totalsupply_finfo, totalsupply_tdiff, totalsupply_prcnt]
 
                 # Comparing "circulating supply" total differences.
                 circlsupply_uinfo = currency['circulating_supply']
@@ -629,6 +648,7 @@ class Helper(commands.Cog):
                     True,
                     True
                 )
+                sinfo['circlsupply'] = [circlsupply_uinfo, circlsupply_finfo, circlsupply_tdiff, circlsupply_prcnt]
 
                 # Comparing "max supply" total differences.
                 maxsupply_uinfo = currency['max_supply']
@@ -638,63 +658,97 @@ class Helper(commands.Cog):
                     True,
                     True
                 )
+                sinfo['maxsupply'] = [maxsupply_uinfo, maxsupply_finfo, maxsupply_tdiff, maxsupply_prcnt]
 
                 # Convert 'Date Added' and 'Last Updated' to DateTime.
                 # 'Date Added' value shouldn't ever change.
                 dateadded_dtconv = self.dtconvert(currency['date_added'], type = 'cmc')
                 lastupd_dtconv_uinfo = self.dtconvert(currency['last_updated'], type = 'cmc')
                 lastupd_dtconv_finfo = self.dtconvert(name_finfo['last_updated'], type = 'cmc')
+                sinfo['dates'] = [dateadded_dtconv, lastupd_dtconv_uinfo, lastupd_dtconv_finfo]
 
-
-                header = f'Cryptocurrency Information: [{symbol}]  |  {i} of {len(found_info)}'
-                fields = [
-                    ['`Name:`', currency['name'], True],
-                    ['`Symbol:`', currency['symbol'], True],
-                    ['`ID:`', currency['id'], True],
-                    [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
-                    [f'`Converted To:`', f'{self.rwc}', True],
-                    [f'`Current Price:`', f'${price_finfo}', True],
-                    [f'`Old Price:`', f'${price_uinfo}', True],
-                    [f'`Total Difference:`', f'${price_tdiff}', True],                    
-                    [f'`Percent Change:`', f'{price_prcnt}%', True],
-                    ['`24H Volume:`', f'{volume24h_finfo} | {volume24h_prcnt}%', True],
-                    [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
-                    ['Date Added:', dateadded_dtconv, True],
-                    ['CMC Rank:', f'{cmcrank_uinfo} *>>>* {cmcrank_finfo}', True],
-                    ['Number of Market Pairs:', f'{nummarkpairs_finfo} | {nummarketpairs_prcnt}%', True],
-                    ['Total Supply:', f'{totalsupply_finfo} | {totalsupply_prcnt}%', True],
-                    ['Circulating Supply:', f'{circlsupply_finfo} | {circlsupply_prcnt}%', True],
-                    ['Maximum Supply:', f'{maxsupply_finfo} | {maxsupply_prcnt}', True],
-                    [f'{chr(173)}', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
-                    ['[USER] Last Updated:', lastupd_dtconv_uinfo, False],
-                    ['[DATA] Last Updated:', lastupd_dtconv_finfo, False]
-                ]
-                footer = self.dtformat_return(True)
-                info = self.create_embed_msg(header, fields, footer)
-
-                i += 1
                 verify = True
-                messages.append(info)
+                special_info_all.append(sinfo)
                 continue
 
-            '''
-            1. Verify if the currency was found in the user's info (uinfo).
-            2. If it's not found, take the symbol and append to 'not_in_uinfo'.
-                * To get the symbol, 'found' is used.
-                * The first crypto-symbol in 'found' (found[0]) will correspond
-                  to the symbol of the first currency in 'found_info' (found_info[currency1])...
-                  The second crypto-symbol in 'found' (found[1]) will correspond
-                  to the symbol of the second currency in 'found_info' (found_info[currency2])...
-                  and so on...
-            3. Since 'i' starts off at '1' but a list zero-indexed, the value of 'i' will 
-               always be offset from a list by '+1'.
-            4. The value of 'i' alone can't be used. In order to get the crypto-symbol in
-               'found' that corresponds to the symbol of its 'found_info' counter-part,
-               the above needs to be compensated for. This is done by using 'found[i-1]'.
-            '''
             if verify == False:
                 not_in_uinfo.append(found[i-1])
                 continue
+
+        return special_info_all, not_in_uinfo
+
+    async def compare_crypto_msg(self, member, symbols):
+        all_sinfo, not_in_uinfo = await self.compare_crypto(member, symbols)
+        messages = []
+        i = 1
+
+        for currency in all_sinfo:
+            '''
+            1. Symbol
+            2. Name
+            3. ID
+            4. Price
+            5. 24H Volume
+            6. CMC Rank
+            7. Number of Market Pairs
+            8. Total Supply
+            9. Circulating Supply
+            10. Max Supply
+            11. Dates
+            '''
+            # 1
+            symbol = currency['symbol']
+            # 2
+            name = currency['name']
+            # 3
+            id = currency['id']
+            # 4
+            price_uinfo, price_finfo, price_tdiff, price_prcnt = currency['price']
+            # 5
+            volume24h_uinfo, volume24h_finfo, volume24h_tdiff, volume24h_prcnt = currency['volume24h']
+            # 6
+            cmcrank_uinfo, cmcrank_finfo, cmcrank_tdiff = currency['cmcrank']
+            # 7
+            nummarkpairs_uinfo, nummarkpairs_finfo, nummarkpairs_tdiff, nummarketpairs_prcnt = currency['nummarkpairs']
+            # 8
+            totalsupply_uinfo, totalsupply_finfo, totalsupply_tdiff, totalsupply_prcnt = currency['totalsupply']
+            # 9
+            circlsupply_uinfo, circlsupply_finfo, circlsupply_tdiff, circlsupply_prcnt = currency['circlsupply']
+            # 10
+            maxsupply_uinfo, maxsupply_finfo, maxsupply_tdiff, maxsupply_prcnt = currency['maxsupply']
+            # 11
+            dateadded_dtconv, lastupd_dtconv_uinfo, lastupd_dtconv_finfo = currency['dates']
+
+
+
+            header = f'Cryptocurrency Information: [{symbol}]  |  {i} of {len(all_sinfo)}'
+            fields = [
+                ['`Name:`', name, True],
+                ['`Symbol:`', symbol, True],
+                ['`ID:`', id, True],
+                [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
+                [f'`Converted To:`', f'{self.rwc}', True],
+                [f'`Current Price:`', f'${price_finfo}', True],
+                [f'`Old Price:`', f'${price_uinfo}', True],
+                [f'`Total Difference:`', f'${price_tdiff}', True],                    
+                [f'`Percent Change:`', f'{price_prcnt}%', True],
+                ['`24H Volume:`', f'{volume24h_finfo} | {volume24h_prcnt}%', True],
+                [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
+                ['Date Added:', dateadded_dtconv, True],
+                ['CMC Rank:', f'{cmcrank_uinfo} *>>>* {cmcrank_finfo}', True],
+                ['Number of Market Pairs:', f'{nummarkpairs_finfo} | {nummarketpairs_prcnt}%', True],
+                ['Total Supply:', f'{totalsupply_finfo} | {totalsupply_prcnt}%', True],
+                ['Circulating Supply:', f'{circlsupply_finfo} | {circlsupply_prcnt}%', True],
+                ['Maximum Supply:', f'{maxsupply_finfo} | {maxsupply_prcnt}%', True],
+                [f'{chr(173)}', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
+                ['[USER] Last Updated:', lastupd_dtconv_uinfo, False],
+                ['[DATA] Last Updated:', lastupd_dtconv_finfo, False]
+            ]
+            footer = self.dtformat_return(True)
+
+            info = self.create_embed_msg(header, fields, footer)
+            messages.append(info)
+            i += 1
 
         if len(not_in_uinfo) > 0:
             error = await self.symbols_notuinfo_msg(not_in_uinfo)
