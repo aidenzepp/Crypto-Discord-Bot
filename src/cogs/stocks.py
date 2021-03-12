@@ -120,10 +120,25 @@ class Stocks(commands.Cog):
 
         # Symbols Not Found - Error Message
         if len(not_found) > 0:
-            header = 'Cryptocurrency Information  |  ERROR:'
-            fields = [['Symbols Not Found:', not_found, False]]
-            error = self.helper.create_embed_msg(header, fields, colour = discord.Colour.red())
+            error = self.helper.symbols_notfound_msg(not_found)
+            time.sleep(0.5)
+            await ctx.send(embed = error)
 
+    @commands.command(aliases = ['compare-crypto', 'compare-c', 'comparecrypto', 'compcryp'])
+    async def compare_crypto_to_uinfo(self, ctx, target: Optional[Member], *args):
+        await self.helper.check_and_load()
+        await self.helper.check_server()
+
+        member = target or ctx.author
+        messages, not_found = await self.helper.compare_crypto_msg(member, args)
+
+        for message in messages:
+            time.sleep(0.5)
+            await ctx.send(embed = message)
+        
+        # Symbols Not Found - Error Message
+        if len(not_found) > 0:
+            error = await self.helper.symbols_notfound_msg(not_found)
             time.sleep(0.5)
             await ctx.send(embed = error)
 
