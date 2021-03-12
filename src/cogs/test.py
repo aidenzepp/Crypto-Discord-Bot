@@ -1,11 +1,14 @@
 import discord
 from discord.ext import commands
+
+from cogs.helper import Helper
 # --
 
 class Test(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.helper = Helper(client)
 
 
     # -- Commands --
@@ -57,6 +60,10 @@ class Test(commands.Cog):
         )
 
         await ctx.send(embed = embed)
+
+    @commands.command()
+    async def servertest(self, ctx):
+        return await ctx.send(self.helper.server)
 
 
 def setup(client):
