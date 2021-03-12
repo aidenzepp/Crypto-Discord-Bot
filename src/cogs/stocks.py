@@ -130,17 +130,11 @@ class Stocks(commands.Cog):
         await self.helper.check_server()
 
         member = target or ctx.author
-        messages, not_found = await self.helper.compare_crypto_msg(member, args)
+        messages = await self.helper.compare_crypto_msg(member, args)
 
         for message in messages:
             time.sleep(0.5)
             await ctx.send(embed = message)
-        
-        # Symbols Not Found - Error Message
-        if len(not_found) > 0:
-            error = await self.helper.symbols_notfound_msg(not_found)
-            time.sleep(0.5)
-            await ctx.send(embed = error)
 
 
 # -- Cog Setup --

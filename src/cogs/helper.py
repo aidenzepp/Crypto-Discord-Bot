@@ -470,6 +470,15 @@ class Helper(commands.Cog):
 
         return messages, not_found
 
+    async def symbols_notuinfo_msg(self, not_in_uinfo):
+        header = [
+            'Cryptocurrency Information  |  ERROR:',
+            'The symbols shown below can not be found in the user\'s info file. Please use `addcrypto` to add a cryptocurrency to a user\'s info file.'
+        ]
+        fields = [['Symbols Not Found:', not_in_uinfo, False]]
+        error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
+        return error
+
     async def add_crypto_to_user(self, member, cryptos):
         # Finds user's info file, loads it, attaches
         # cryptocurrency info to user's info, then
@@ -479,21 +488,18 @@ class Helper(commands.Cog):
         info['crypto'].update(cryptos)
         self.json_dump(info, filepath)
 
-    async def symbols_notfound_msg(self, not_found):
-        header = 'Cryptocurrency Information  |  ERROR:'
-        fields = [['Symbols Not Found:', not_found, False]]
-        error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
-        return error
-
     async def compare_crypto_msg(self, member, symbols):
         uinfo = await self.find_user(member)
         currencies = uinfo['crypto']
         found, found_info, not_found = await self.find_crypto_info(symbols)
+        not_in_uinfo = []
         messages = []
         i = 1
 
-        for currency in currencies:
-            if currency in found_info.keys():
+        for currency in found_info.keys():
+            verify = False
+
+            if currency in currencies:
                 currency = currencies[currency]
                 symbol = currency['symbol']
                 name = currency['name']
@@ -596,9 +602,38 @@ class Helper(commands.Cog):
                 info = self.create_embed_msg(header, fields, footer)
 
                 i += 1
+                verify = True
                 messages.append(info)
+                continue
 
-        return messages, not_found
+            '''
+            1. Verify if the currency was found in the user's info (uinfo).
+            2. If it's not found, take the symbol and append to 'not_in_uinfo'.
+                * To get the symbol, 'found' is used.
+                * The first crypto-symbol in 'found' (found[0]) will correspond
+                  to the symbol of the first currency in 'found_info' (found_info[currency1])...
+                  The second crypto-symbol in 'found' (found[1]) will correspond
+                  to the symbol of the second currency in 'found_info' (found_info[currency2])...
+                  and so on...
+            3. Since 'i' starts off at '1' but a list zero-indexed, the value of 'i' will 
+               always be offset from a list by '+1'.
+            4. The value of 'i' alone can't be used. In order to get the crypto-symbol in
+               'found' that corresponds to the symbol of its 'found_info' counter-part,
+               the above needs to be compensated for. This is done by using 'found[i-1]'.
+            '''
+            if verify == False:
+                not_in_uinfo.append(found[i-1])
+                continue
+
+        if len(not_in_uinfo) > 0:
+            error = await self.symbols_notuinfo_msg(not_in_uinfo)
+            messages.append(error)
+
+        print(found)
+
+        print(not_in_uinfo)
+        print(messages)
+        return messages
 
 
 # -- Cog Setup --
