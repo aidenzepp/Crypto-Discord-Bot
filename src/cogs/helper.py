@@ -445,15 +445,18 @@ class Helper(commands.Cog):
         return found, found_info, not_found
 
     async def symbols_notfound_msg(self, not_found):
-        header = 'Cryptocurrency Information  |  ERROR:'
+        header = [
+            'Cryptocurrency Information  |  ERROR - NOT FOUND:',
+            'The symbols shown below could not be found in the cryptocurrency data. Please make sure the correct cryptocurrency symbol was used.'
+        ]
         fields = [['Symbols Not Found:', not_found, False]]
         error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
         return error
 
     async def symbols_notuinfo_msg(self, not_in_uinfo):
         header = [
-            'Cryptocurrency Information  |  ERROR:',
-            'The symbols shown below can not be found in the user\'s info file. Please use `addcrypto` to add a cryptocurrency to a user\'s info file.'
+            'Cryptocurrency Information  |  ERROR - NOT STORED:',
+            'The symbols shown below could not be found in the user\'s info file. Please use `addcrypto` to add a cryptocurrency to a user\'s info file.'
         ]
         fields = [['Symbols Not Found:', not_in_uinfo, False]]
         error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
@@ -570,7 +573,6 @@ class Helper(commands.Cog):
         currencies = uinfo['crypto']
         found, found_info, not_found = await self.find_crypto_info(symbols)
         not_in_uinfo = []
-        i = 1
 
         # Contains all the formatted/altered information for each currency.
         special_info_all = []
@@ -672,13 +674,13 @@ class Helper(commands.Cog):
                 continue
 
             if verify == False:
-                not_in_uinfo.append(found[i-1])
+                not_in_uinfo.append(currency)
                 continue
 
-        return special_info_all, not_in_uinfo
+        return special_info_all, not_in_uinfo, not_found
 
     async def compare_crypto_msg(self, member, symbols):
-        all_sinfo, not_in_uinfo = await self.compare_crypto(member, symbols)
+        all_sinfo, not_in_uinfo, not_found = await self.compare_crypto(member, symbols)
         messages = []
         i = 1
 
@@ -751,9 +753,13 @@ class Helper(commands.Cog):
             i += 1
 
         if len(not_in_uinfo) > 0:
-            error = await self.symbols_notuinfo_msg(not_in_uinfo)
-            messages.append(error)
+            error_notuinfo = await self.symbols_notuinfo_msg(not_in_uinfo)
+            messages.append(error_notuinfo)
 
+        if len(not_found) > 0:
+            error_notfound = await self.symbols_notfound_msg(not_found)
+            messages.append(error_notfound)
+            
         return messages
 
 
