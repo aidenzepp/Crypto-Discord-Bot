@@ -4,7 +4,7 @@ A bot based on Discord API and written in Python v3.9.2.
 The bot is equipped with some basic commands, but is overall meant to provide notifications and information to a Discord user regarding stock and/or cryptocurrency information.
 
 - Author: Aiden Zepp
-- 'README.md' file updated as of: 8 March, 2021.
+- 'README.md' file updated as of: 12 March, 2021.
 
 #
 
@@ -131,14 +131,20 @@ Each command is either within the main `bot.py` file or within a cog file. The t
     - **Aliases:** `embed`
     - **Attributes:** *n/a*
     - **Description:** sends a message in the embed form to the channel it was called in, containing an example of each section that can be added to it (e.g. '.set_author', '.add_field'); includes an example of added fields with the 'inline' attribute being set to 'True' and fields set to 'False'.
-        > **Note**: The bot's `embed_test` command does not have a `color / colour` attribute set within `discord.Embed()`. To add a color to the embed message, type a comma after the `description` attribute within `discord.Embed()` and set the `color / colour` attribute to the desired color. `color` and `colour` are the same, and are simply just aliases of each other. 
+        > **Note:** The bot's `embed_test` command does not have a `color / colour` attribute set within `discord.Embed()`. To add a color to the embed message, type a comma after the `description` attribute within `discord.Embed()` and set the `color / colour` attribute to the desired color. `color` and `colour` are the same, and are simply just aliases of each other. 
    
     - This command is used by the author generally as a quick reference guide of the various add-ons an embed message can have, and what arguments each one takes. Click [here](https://discordpy.readthedocs.io/en/latest/api.html#embed) to visit Discord's API Reference for an 'Embed'.
+    
+- `servertest`
+    - **Aliases:** *n/a*
+    - **Attributes:** *n/a*
+    - **Description**: sends a message to the channel it was called in, containing the type of the 'Helper' class's `self.server` content.
+    - This command is used by the author generally as a way to check and/or confirm that the 'Helper' class's `self.server` is working as intended.
 
 --
 
 #### [COG] Information:
-- `server`
+- `server_info`
     - **Aliases:** `serverinfo`, `s-info`, `guild`, `guild`, `guildinfo`
     - **Attributes:** *n/a*
     - **Description:** sends a message in the embed form to the channel it was called in, containing information about the Discord server the bot is in.
@@ -153,9 +159,12 @@ Each command is either within the main `bot.py` file or within a cog file. The t
 
 - `add_user_info`
     - **Aliases:** `add-user-info`, `add-uinfo`, `adduser`
-    - **Attributes:** *member (discord.Member)*
-        - *member*: takes a [`discord.Member`](https://discordpy.readthedocs.io/en/latest/api.html#member) object as the attribute; simply @ the user -- as would normally be done when trying to tag a user in Discord -- along with the command (e.g. "{Insert Prefix Here}add_user_info @ExampleUser#0000").
-    - **Description:** if, for whatever reason, a user's information hasn't been added to the **'src/hidden/ALL_USERS_INFO.json'** automatically, this command will take the information of the user @'d with the command and append their information to the list of users stored within **'ALL_USERS_INFO.json'**; the command sends a message in the embed form to the channel it was called in, containing all the same information that was stored in the above file.
+    - **Attributes:** *target: Optional[Member]*
+        - *target*: takes an **optional** [`discord.Member`](https://discordpy.readthedocs.io/en/latest/api.html#member) object as the attribute; simply @ the user -- as would normally be done when trying to tag a user in Discord -- along with the command (e.g. "{Insert Prefix Here}add_user_info @ExampleUser#0000").
+            > **Note:** if no `target` is specified, the `target` will automatically become the author of the command call (the author of the message).
+
+    - **Description:** this command will take the information of the user targeted with the command and creates a new file containing their information in **'src/hidden/ALL_USERS_INFO'**, with their ID as the file name (e.g. '{Target's ID}.json'); the command sends a message in the embed form to the channel it was called in, containing all the same information that was stored in the above file.
+
     - The information stored and displayed is as follows:
         1. Display Name
         2. Discriminator
@@ -164,14 +173,17 @@ Each command is either within the main `bot.py` file or within a cog file. The t
         5. Nickname (the string form of the nickname a user has chosen for the server)
         6. Colour (a 'colour' object that has been stored in the file as a string)
         7. Joined At (a 'datetime' object that has been stored in the file as a string)
+    - For more information on the **discord.Member** object, click [here](https://discordpy.readthedocs.io/en/latest/api.html#member) to visit Discord’s API Reference for a ‘Member’.
 
 - `see_user_info`
     - **Aliases:** `see-user-info`, `see-uinfo`, `seeuser`
-    - **Attributes:** *member (discord.Member)*
-        - *member*: takes a `discord.Member` object as the attribute; simply @ the user along with the command (e.g. "{Insert Prefix Here}add_user_info @ExampleUser#0000").
-    - **Description:** sends a message in the embed form to the channel it was called in, containing the information of the user @'d; if the user can't be found in the filepath **'src/hidden/ALL_USERS_INFO.json'**, the commands sends an error message in the embed form to the channel it was called in, stating that the user could not be found and to try using the `adduser` command to add the user to the system.
-        > **Note:** Any stock or cryptocurrency information stored within the user's information is not displayed.
+    - **Attributes:** *target: Optional[Member]*
+        - *target*: takes an **optional** [`discord.Member`](https://discordpy.readthedocs.io/en/latest/api.html#member) object as the attribute; simply @ the user -- as would normally be done when trying to tag a user in Discord -- along with the command (e.g. "{Insert Prefix Here}see_user_info @ExampleUser#0000").
+            > **Note:** if no `target` is specified, the `target` will automatically become the author of the command call (the author of the message).
 
+    - **Description:** sends a message in the embed form to the channel it was called in, containing the information of the user targeted; if the user can't be found in the directory **'src/hidden/ALL_USERS_INFO'**, the commands sends an error message in the embed form to the channel it was called in, stating that the user could not be found and to try using the `adduser` command to add the user to the system.
+        > **Note:** any cryptocurrency information stored within the user's information is not displayed.
+        
     - The information stored and displayed is as follows:
         1. Display Name
         2. Discriminator
@@ -203,8 +215,8 @@ Each command is either within the main `bot.py` file or within a cog file. The t
     
 - `see_crypto_info`
     - **Aliases:** `see-crypto-info`, `see-cinfo`, `seecrypto`
-    - **Attributes:** *crypto_symbols*
-        - *crypto_symbols*: takes all of the characters passed after the command name and searches the cryptocurrency data for cryptocurrencies with matching symbols; sends a message in the embed form to the channel it was called in, displaying information for each cryptocurrency requested.
+    - **Attributes:** **args*
+        - **args*: takes all characters passed after the command name and searches the cryptocurrency data for cryptocurrencies with matching symbols; sends a message in the embed form to the channel it was called in, displaying information for each cryptocurrency requested.
             > **Note:** the input symbols are **not** case-sensitive, though they will need to have only **one** space in between each currency; if any characters **not** in A-Z or a-z are part of the request, the symbol who has one of these characters will be returned with the error embed message.
 
     - **Description:** sorts through the data obtained from *CoinMarketCap* to retrieve information on cryptocurrencies with symbols matching any or all of the symbols requested; sends a message in the embed form to the channel it was called in, displaying information for each of the cryptocurrencies requested.
@@ -223,10 +235,13 @@ Each command is either within the main `bot.py` file or within a cog file. The t
         11. Maximum Supply
         12. Last Updated
 
-- `add_crypto_to_info`
-    - **Aliases:** `add-crypto-self`, `add-cself`, `cryptoself`
-    - **Attributes:** *crypto_symbols*
-        - *crypto_symbols*: takes all of the characters passed after the command name and searches the data of cryptocurrencies for currencies with matching symbols; sends a message in the embed form to the channel it was called in, displaying information for each cryptocurrency requested.
+- `add_crypto_to_uinfo`
+    - **Aliases:** `add-crypto`, `add-c`, `addcrypto`
+    - **Attributes:** *target: Optional[Member]*, **args*
+        - *target*: takes an **optional** [`discord.Member`](https://discordpy.readthedocs.io/en/latest/api.html#member) object as the attribute; simply @ the user -- as would normally be done when trying to tag a user in Discord -- along with the command (e.g. "{Insert Prefix Here}see_user_info @ExampleUser#0000").
+            > **Note:** if no `target` is specified, the `target` will automatically become the author of the command call (the author of the message).
+
+        - **args*: takes all characters passed after the command name and searches the cryptocurrency data for cryptocurrencies with matching symbols; sends a message in the embed form to the channel it was called in, displaying information for each cryptocurrency requested.
             > **Note:** the input symbols are **not** case-sensitive, though they will need to have only **one** space in between each currency; if any characters **not** in A-Z or a-z are part of the request, the symbol who has one of these characters will be returned with the error embed message.
 
     - **Description:** sorts through the data obtained from *CoinMarketCap* to retrieve information on cryptocurrencies with symbols matching any or all of the symbols requested, and then adds those cryptocurrencies' information to the user's information in the `src/hidden/ALL_USERS_INFO.json` file; sends a message in the embed form to the channel it was called in, displaying a list of the cryptocurrencies requested and added to the user's information.
@@ -289,7 +304,7 @@ The `limit` determines the number of cryptocurrencies stored in the cryptocurren
 Each cryptocurrency has a rank provided by *CoinMarketCap*. The `limit` sets the bot to retrieve information of the cryptocurrencies with ranks of 1 through the value assigned to `limit`.
 > For example, if the `limit` is set to **'5000'**, the data would retrieve the information of the cryptocurrencies ranked from **1 to 5000**.
 
-To change the `limit`, find and open the `stocks.py` file and locate the `__init__()` method. Within `__init__()`, a comment can be found stating:
+To change the `limit`, find and open the `helper.py` file and locate the `__init__()` method. Within `__init__()`, a comment can be found stating:
 > CoinMarketCap API Documentation - Quickstart Guide's Format
 
 In this section of code, find `parameters`. Within `parameters`, locate `limit` and change the value assigned to it. The code below is an example of what the code would look like.
@@ -303,7 +318,7 @@ In this section of code, find `parameters`. Within `parameters`, locate `limit` 
             'convert': 'USD'
         }
 ```
-> If the `stocks.py` file uses the above example code, the amount of data retrieved from CoinMarketCap would be limited to the cryptocurrencies from ranks 1-100.
+> If the `helper.py` file uses the above example code, the amount of data retrieved from CoinMarketCap would be limited to the cryptocurrencies from ranks 1-100.
 
 --
 
@@ -313,7 +328,7 @@ The `convert` determines the 'real-world' currency that the cryptocurrencies are
 
 *CoinMarketCap* base-level accounts that are using API keys are only able to convert a single real-world currency at a time. An upgraded *CoinMarketCap* account would be needed in order to use `convert` with more than one real-world currency.
 
-To change the `convert`, find and open the `stocks.py` file and locate the `__init__()` method. Within `__init__()`, a comment can be found stating:
+To change the `convert`, find and open the `helper.py` file and locate the `__init__()` method. Within `__init__()`, a comment can be found stating:
 > CoinMarketCap API Documentation - Quickstart Guide's Format
 
 In this section of code, find `parameters`. Within `parameters`, locate `convert` and change the value assigned to it with a real-world currency code (e.g. USD, EUR, CNY). The code below is an example of what the code would look like.
@@ -327,7 +342,7 @@ In this section of code, find `parameters`. Within `parameters`, locate `convert
             'convert': 'USD'
         }
 ```
-> If the `stocks.py` file uses the above example code, each cryptocurrency would contain information relating to the conversion to USD.
+> If the `helper.py` file uses the above example code, each cryptocurrency would contain information relating to the conversion to USD.
 
 #
 
