@@ -1,9 +1,12 @@
 import discord
+from discord import member
+from discord import guild
 from discord.ext import commands
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import datetime as dt
 import json
+import time
 import os
 #--
 
@@ -42,6 +45,9 @@ Self Attributes:
     > self.usersinfo_dir = 'src/hidden/ALL_USERS_INFO'
         * True Return Value = f'{self.hidden}/ALL_USERS_INFO'
         * Found under '-- Files & Folder Paths --' section.
+    > self.server = server
+        * server: the 'Guild' class (discord.Guild), containing info of the server; type() == discord.guild.Guild
+        * Found under '-- Discord --' section.
 
 Functions List:
     - JSON -
@@ -57,9 +63,10 @@ Functions List:
             * header = None
             * fields = None
             * footer = None
-            * discord.Colour.blue()
+            * colour = discord.Colour.blue()
         > cmcdata_error_msg(solutions)
             * solutions = False
+        > set_server
 
     - USER -
         > user_filename(member, filetype)
@@ -82,9 +89,13 @@ Functions List:
         > [ASYNC] load_cmcdata()
         > [ASYNC] check_cmcdata()
         > [ASYNC] check_and_load()
+        > [ASYNC] find_crypto_info(symbols)
+            * symbols: the symbols of requested cryptocurrencies; type() == tuple
+        > [ASYNC] crypto_info_msg(symbols)
+            * symbols: the symbols of requested cryptocurrencies; type() == tuple
         > [ASYNC] add_crypto_to_user(member, cryptos)
             * member: type() == discord.Member
-            * cryptos = information of cryptocurrencies being added to the user's info file; type() == dict
+            * cryptos: information of cryptocurrencies being added to the user's info file; type() == dict
 '''
 
 class Helper(commands.Cog):
@@ -136,7 +147,7 @@ class Helper(commands.Cog):
 
     def __str__(self):
         pass
-
+        
 
     # -- File & Folder Paths --
     @property
@@ -198,7 +209,18 @@ class Helper(commands.Cog):
         return converted
 
 
-    # -- Discord Embed Messages --
+    # -- Discord --
+    @property
+    def server(self):
+        server = discord.Guild
+        return server
+
+    async def check_server(self):
+        if self.server == None:
+            print('Server wasn\'t loaded. Loading now...')
+            self.server = discord.Guild
+        return self.server
+
     @staticmethod
     def create_embed_msg(header = None, fields = None, footer = None, colour = discord.Colour.blue()):
         if (header == None) or (len(header) == 0):
@@ -265,8 +287,8 @@ class Helper(commands.Cog):
 
         msg = self.create_embed_msg(header, fields, colour = discord.Colour.red())
         return msg
+        
 
-    
     # -- User --
     @staticmethod
     def user_filename(member, filetype = 'json'):
@@ -291,7 +313,7 @@ class Helper(commands.Cog):
     def create_user_contents(self, member):
         contents = {}
         contents['user'] = self.user_info(member)
-        contents['crypto'] = []
+        contents['crypto'] = {}
         return contents
 
     async def user_info_msg(self, member):
@@ -355,13 +377,75 @@ class Helper(commands.Cog):
             print('Data wasn\'t loaded. Loading data now...')
             return await self.load_cmcdata()
 
+    async def find_crypto_info(self, symbols):
+        symbols = [symbol.upper() for symbol in symbols]
+        not_found = []
+        found = []
+        found_info = {}
+
+        for symbol in symbols:
+            verify = False
+
+            for currency in self.data:
+                if currency['symbol'] == symbol:
+                    name = currency['name']
+                    found_info[name] = currency
+                    found.append([name, symbol])
+
+                    verify = True
+                    continue
+            
+            if verify == False:
+                not_found.append(symbol)
+                continue
+
+        return found, found_info, not_found
+
+    async def crypto_info_msg(self, symbols):
+        found, found_info, not_found = await self.find_crypto_info(symbols)
+        messages = []
+        i = 1
+
+        for name, symbol in found:
+            info = found_info[name]
+
+            # Setting price to 2 decimal places.
+            price = round(info['quote'][self.rwc]['price'], 2)
+            dateadded_dtconv = self.dtconvert(info['date_added'], type = 'cmc')
+            lastupd_dtconv = self.dtconvert(info['last_updated'], type = 'cmc')
+
+            header = f'Cryptoinfo Information: [{symbol}]  |  {i} of {len(found)}'
+            fields = [
+                ['`Name:`', info['name'], True],
+                ['`Symbol:`', info['symbol'], True],
+                ['`ID:`', info['id'], True],
+                [f'`[{self.rwc}] Price:`', f'${price}', True],
+                [f'`[{self.rwc}] 24H Volume:`', info['quote'][self.rwc]['volume_24h'], True],
+                [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
+                ['Date Added:', dateadded_dtconv, True],
+                ['CMC Rank:', info['cmc_rank'], True],
+                ['Number of Market Pairs:', info['num_market_pairs'], False],
+                ['Total Supply:', info['total_supply'], True],
+                ['Circulating Supply:', info['circulating_supply'], True],
+                ['Maximum Supply:', info['max_supply'], True],
+                [f'{chr(173)}', f'{chr(173)}', False], # Format Spacer; chr(173) is a blank character.
+                ['Last Updated:', lastupd_dtconv, False]
+            ]
+            footer = self.dtformat_return(True)
+            info = self.create_embed_msg(header, fields, footer)
+
+            i += 1
+            messages.append(info)
+
+        return messages, not_found
+
     async def add_crypto_to_user(self, member, cryptos):
         # Finds user's info file, loads it, attaches
         # cryptocurrency info to user's info, then
         # dumps the info's contents back into file.
         filepath = self.user_filepath(member)
         info = self.json_load(filepath)
-        info['crypto'] = cryptos
+        info['crypto'].update(cryptos)
         self.json_dump(info, filepath)
 
     
