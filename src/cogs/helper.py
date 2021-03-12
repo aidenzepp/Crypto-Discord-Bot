@@ -1,3 +1,4 @@
+from operator import not_
 import discord
 from discord import member
 from discord import guild
@@ -317,6 +318,12 @@ class Helper(commands.Cog):
 
         msg = self.create_embed_msg(header, fields, colour = discord.Colour.red())
         return msg
+
+    @staticmethod
+    async def send_embed_messages(ctx, messages, pause = 0.0):
+        for message in messages:
+            time.sleep(pause)
+            await ctx.send(embed = message)
         
 
     # -- User --
@@ -431,6 +438,37 @@ class Helper(commands.Cog):
 
         return found, found_info, not_found
 
+    async def symbols_notfound_msg(self, not_found):
+        header = 'Cryptocurrency Information  |  ERROR:'
+        fields = [['Symbols Not Found:', not_found, False]]
+        error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
+        return error
+
+    async def symbols_notuinfo_msg(self, not_in_uinfo):
+        header = [
+            'Cryptocurrency Information  |  ERROR:',
+            'The symbols shown below can not be found in the user\'s info file. Please use `addcrypto` to add a cryptocurrency to a user\'s info file.'
+        ]
+        fields = [['Symbols Not Found:', not_in_uinfo, False]]
+        error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
+        return error
+
+    async def crypto_info_msg_simple(self, member, found, not_found):
+        messages = []
+        header = [
+                f'Cryptocurrencies Added To {member}\'s Info:',
+                f'{found}'
+            ]
+
+        found_msg = self.create_embed_msg(header)
+        messages.append(found_msg)
+
+        if len(not_found) > 0:
+            error = await self.symbols_notfound_msg(not_found)
+            messages.append(error)
+
+        return messages
+
     async def crypto_info_msg(self, symbols):
         found, found_info, not_found = await self.find_crypto_info(symbols)
         messages = []
@@ -449,13 +487,13 @@ class Helper(commands.Cog):
                 ['`Name:`', info['name'], True],
                 ['`Symbol:`', info['symbol'], True],
                 ['`ID:`', info['id'], True],
-                [f'`Converted To:`', f'{self.rwc}', False],
-                [f'`[{self.rwc}] Price:`', f'${price}', True],
+                [f'`Converted To:`', f'{self.rwc}', True],
+                [f'`Price:`', f'${price}', True],
                 [f'`24H Volume:`', info['quote'][self.rwc]['volume_24h'], True],
                 [f'{chr(173)}', '---', False], # Format Spacer; chr(173) is a blank character.
                 ['Date Added:', dateadded_dtconv, True],
                 ['CMC Rank:', info['cmc_rank'], True],
-                ['Number of Market Pairs:', info['num_market_pairs'], False],
+                ['Number of Market Pairs:', info['num_market_pairs'], True],
                 ['Total Supply:', info['total_supply'], True],
                 ['Circulating Supply:', info['circulating_supply'], True],
                 ['Maximum Supply:', info['max_supply'], True],
@@ -467,17 +505,50 @@ class Helper(commands.Cog):
 
             i += 1
             messages.append(info)
+        
+        if len(not_found) > 0:
+            error = await self.symbols_notfound_msg(not_found)
+            messages.append(error)
 
-        return messages, not_found
+        return messages
 
-    async def symbols_notuinfo_msg(self, not_in_uinfo):
+    async def crypto_top5_msg(self):
         header = [
-            'Cryptocurrency Information  |  ERROR:',
-            'The symbols shown below can not be found in the user\'s info file. Please use `addcrypto` to add a cryptocurrency to a user\'s info file.'
+            'Cryptocurrency  |  Top 5 Ranked Currencies:',
+            'The following is information on the top 5 ranked cryptocurriences.'
         ]
-        fields = [['Symbols Not Found:', not_in_uinfo, False]]
-        error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
-        return error
+        fields = []
+
+        for currency in self.data:
+
+            # Stops after reaching CMC Rank of 6.
+            if currency['cmc_rank'] == 6:
+                break
+
+            rank = currency['cmc_rank']
+            last_updated = currency['last_updated']
+
+            # Setting price to 2 decimal places.
+            price = round(currency['quote'][self.rwc]['price'], 2)
+            lastupdt_dtconv = self.dtconvert(last_updated, type = 'cmc')
+            
+            value = '''
+                `Name:` **{name}**
+                `Symbol:` {symbol}
+                `[{rwc}] Price:` ${price}
+                `Last Updated:` {lastupdt}'''.format(
+                    name = currency['name'],
+                    symbol = currency['symbol'],
+                    rwc = self.rwc,
+                    price = price,
+                    lastupdt = lastupdt_dtconv
+                )
+
+            fields.append([f'Rank {rank}:', value, False])
+        
+        footer = self.dtformat_return(True)
+        top5 = self.create_embed_msg(header, fields, footer)
+        return top5
 
     async def add_crypto_to_user(self, member, cryptos):
         # Finds user's info file, loads it, attaches
@@ -629,10 +700,6 @@ class Helper(commands.Cog):
             error = await self.symbols_notuinfo_msg(not_in_uinfo)
             messages.append(error)
 
-        print(found)
-
-        print(not_in_uinfo)
-        print(messages)
         return messages
 
 
