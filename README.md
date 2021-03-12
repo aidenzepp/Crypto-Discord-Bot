@@ -17,6 +17,7 @@ The bot is equipped with some basic commands, but is overall meant to provide no
 - Displays information about the top five ranked cryptocurrencies, ranked by [CoinMarketCap](https://coinmarketcap.com/).
 - Displays information about one or multiple different cryptocurrencies, specified by the user.
 - Adds information about one or multiple different cryptocurrencies, specified by the user, to the bot's stored information of the user.
+- Compares the most recent cryptocurrency data to information of matching cryptocurrencies stored in the user's file.
 
 #
 
@@ -244,7 +245,19 @@ Each command is either within the main `bot.py` file or within a cog file. The t
         - **args*: takes all characters passed after the command name and searches the cryptocurrency data for cryptocurrencies with matching symbols; sends a message in the embed form to the channel it was called in, displaying information for each cryptocurrency requested.
             > **Note:** the input symbols are **not** case-sensitive, though they will need to have only **one** space in between each currency; if any characters **not** in A-Z or a-z are part of the request, the symbol who has one of these characters will be returned with the error embed message.
 
-    - **Description:** sorts through the data obtained from *CoinMarketCap* to retrieve information on cryptocurrencies with symbols matching any or all of the symbols requested, and then adds those cryptocurrencies' information to the user's information in the `src/hidden/ALL_USERS_INFO.json` file; sends a message in the embed form to the channel it was called in, displaying a list of the cryptocurrencies requested and added to the user's information.
+    - **Description:** sorts through the data obtained from *CoinMarketCap* to retrieve information on cryptocurrencies with symbols matching any or all of the symbols requested, and then adds those cryptocurrencies' information to the user's information in the `src/hidden/ALL_USERS_INFO` directory; sends a message in the embed form to the channel it was called in, displaying a list of the cryptocurrencies requested and added to the user's information.
+        - If any symbols are not found in the data, an error embed message will be sent stating which of the cryptocurrency symbols requested for that could not be found. If a symbol is requested for that is definitely a cryptocurrency's symbol, the `limit` set in the ***Stock*** class's `__init__()` may be set too low. For more information on this subject, visit the **FAQ** section within this *'README'* file.
+
+- `compare_crypto_to_uinfo`
+    - **Alliases:** `compare-crypto`, `compare-c`, `comparecrypto`, `compcryp`
+    - **Attributes:** *target: Optional[Member]*, **args*
+        - *target*: takes an **optional** [`discord.Member`](https://discordpy.readthedocs.io/en/latest/api.html#member) object as the attribute; simply @ the user -- as would normally be done when trying to tag a user in Discord -- along with the command (e.g. "{Insert Prefix Here}see_user_info @ExampleUser#0000").
+            > **Note:** if no `target` is specified, the `target` will automatically become the author of the command call (the author of the message).
+
+        - **args*: takes all characters passed after the command name and searches the cryptocurrency data for cryptocurrencies with matching symbols; sends a message in the embed form to the channel it was called in, displaying information for each cryptocurrency requested.
+            > **Note:** the input symbols are **not** case-sensitive, though they will need to have only **one** space in between each currency; if any characters **not** in A-Z or a-z are part of the request, the symbol who has one of these characters will be returned with the error embed message.
+            
+    - **Description:** sorts through the data obtained from *CoinMarketCap* to retrieve information on cryptocurrencies with symbols matching any or all of the symbols requested, and then compares those cryptocurrencies' information to the user's information in the `src/hidden/ALL_USERS_INFO` directory; sends a message in the embed form to the channel it was called in, displaying statistical information of the cryptocurrencies requested compared to the cryptocurrency information in the user's information file.
         - If any symbols are not found in the data, an error embed message will be sent stating which of the cryptocurrency symbols requested for that could not be found. If a symbol is requested for that is definitely a cryptocurrency's symbol, the `limit` set in the ***Stock*** class's `__init__()` may be set too low. For more information on this subject, visit the **FAQ** section within this *'README'* file.
 
 #
