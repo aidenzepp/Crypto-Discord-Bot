@@ -99,11 +99,11 @@ class Stocks(commands.Cog):
             await ctx.send(embed = not_found_error)
 
     @commands.command(aliases = ['add-crypto', 'add-c', 'addcrypto'])
-    async def add_crypto_to_uinfo(self, ctx, member: Optional[Member], *args):
+    async def add_crypto_to_uinfo(self, ctx, target: Optional[Member], *args):
         await self.helper.check_and_load()
         await self.helper.check_server()
 
-        member = member or ctx.author
+        member = target or ctx.author
         found, found_info, not_found = await self.helper.find_crypto_info(args)
 
         # Error occurs w/ 1 crypto-symbol input and it not being found.
