@@ -13,6 +13,7 @@ with open('src/hidden/secrets.json') as f:
     keys = secrets['keys']
     serverinfo = secrets['server']
     prefix = serverinfo['prefix']
+    datastartup = str(serverinfo['datastartup']).upper()
 
 # -- Run Confirmations --
 print('[ --- STARTUP CONFIRMATIONS: --- ]')
@@ -29,6 +30,8 @@ else:
     print('Commencing immediate startup...')
     time.sleep(0.5)
     print(f'Bot Prefix: \'{prefix}\'')
+    time.sleep(1.0)
+    print(f'Load Data on Startup: {datastartup}')
     time.sleep(1.0)
     print('[ --- STARTUP CONFIRMATIONS: END --- ]')
     time.sleep(1.0)
@@ -161,11 +164,18 @@ async def reload(ctx, extension):
 
 
 # -- Load Cogs --
-for filename in os.listdir('src/cogs'):
+print('[PROCESS] Loading Cogs...')
+print(' ')
+time.sleep(0.75)
 
+for filename in os.listdir('src/cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
         print(f'[cogs.{filename[:-3]}] has been loaded.')
+
+time.sleep(0.75)
+print(' ')
+print('[PROCESS] Cogs Loaded.')
 
 
 

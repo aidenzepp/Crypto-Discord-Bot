@@ -151,6 +151,8 @@ class Helper(commands.Cog):
     with open('src/hidden/secrets.json') as f: 
         secrets = json.load(f)
         keys = secrets['keys']
+        serverinfo = secrets['server']
+        datastartup = serverinfo['datastartup']
         # Because the code above is inserted this way,
         # the 'keys' object can be accessed using 'self.keys'.
         
@@ -161,33 +163,42 @@ class Helper(commands.Cog):
         self.data = None
         self.rwc = 'USD' # 'rwc' = Real World Currency; the currency that the cryptocurrency will be converted to.
 
-        # CoinMarketCap API Documentation - Quickstart Guide's Format
-        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+        
+        if self.datastartup:
+            # CoinMarketCap API Documentation - Quickstart Guide's Format
+            url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
 
-        parameters = {
-            'start': '1',
-            'limit': '100',
-            'convert': self.rwc
-        }
+            parameters = {
+                'start': '1',
+                'limit': '100',
+                'convert': self.rwc
+            }
 
-        headers = {
-            'Accepts': 'application/json',
-            'X-CMC_PRO_API_KEY': self.keys['coinmarketcap']
-        }
+            headers = {
+                'Accepts': 'application/json',
+                'X-CMC_PRO_API_KEY': self.keys['coinmarketcap']
+            }
 
-        session = Session()
-        session.headers.update(headers)
+            session = Session()
+            session.headers.update(headers)
 
-        try:
-            response = session.get(url, params = parameters)
-            data = json.loads(response.text)
+            try:
+                response = session.get(url, params = parameters)
+                data = json.loads(response.text)
 
-            with open(f'{self.hidden}//CMC_data.json', 'w') as f:
-                json.dump(data, f, indent = 4)
+                with open(f'{self.hidden}/CMC_data.json', 'w') as f:
+                    json.dump(data, f, indent = 4)
 
-        except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
-            print('[CMC API] Encountered Error: ' + ERROR)
-        # --
+            except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
+                print('[CMC API] Encountered Error: ' + ERROR)
+            # --
+
+            self.data = data
+
+        else:
+            with open(f'{self.hidden}/CMC_data.json', 'w') as outfile:
+                empty = {}
+                json.dump(empty, outfile)
 
     def __repr__(self):
         pass
@@ -199,7 +210,12 @@ class Helper(commands.Cog):
     # -- File & Folder Paths --
     @property
     def cmc_filepath(self):
-        return f'{self.hidden}/CMC_data.json'
+        try:
+            return f'{self.hidden}/CMC_data.json'
+        except FileNotFoundError:
+            with open(f'{self.hidden}/CMC_data.json', 'w') as f:
+                _ = json.load(f)
+            return f'{self.hidden}/CMC_data.json'
 
     @property
     def usersinfo_dir(self):
@@ -356,28 +372,6 @@ class Helper(commands.Cog):
 
         return msg
 
-    def cmcdata_error_msg(self, solutions = False):
-        # Check if the error message should contain possible solutions.
-        if solutions:
-            header = [
-                'Cryptocurrency  |  ERROR:',
-                'The cryptocurrency data appears to be missing!'
-            ]
-
-            fields = [
-                ['[1] Force Load:', 'Try using the `load-cmcdata` command to force the data to load in again.', False],
-                ['[2] Restart:', 'Try restarting the bot. This will make the bot go through the process of loading the data from CoinMarketCap\'s servers again.', False],
-                ['[3] Reload Cog:', 'Try using the `reload {Insert Name of Cog}` command to unload the specified cog and load it back in. For this cog, the command would be `reload stocks`.', False]
-            ]
-        else:
-            header = [
-                'Cryptocurrency  |  ERROR:',
-                'The cryptocurrency data appears to be missing!'
-            ]
-
-        msg = self.create_embed_msg(header, fields, colour = discord.Colour.red())
-        return msg
-
     @staticmethod
     async def send_embed_messages(ctx, messages, pause = 0.0):
         for message in messages:
@@ -462,6 +456,39 @@ class Helper(commands.Cog):
 
     
     # -- CoinMarketCap --
+    async def forceload_cmcdata(self):
+        # CoinMarketCap API Documentation - Quickstart Guide's Format
+        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+
+        parameters = {
+            'start': '1',
+            'limit': '100',
+            'convert': self.rwc
+        }
+
+        headers = {
+            'Accepts': 'application/json',
+            'X-CMC_PRO_API_KEY': self.keys['coinmarketcap']
+        }
+
+        session = Session()
+        session.headers.update(headers)
+
+        try:
+            response = session.get(url, params = parameters)
+            data = json.loads(response.text)
+
+            with open(f'{self.hidden}/CMC_data.json', 'w') as f:
+                json.dump(data, f, indent = 4)
+
+        except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
+            print('[CMC API] Encountered Error: ' + ERROR)
+        # --
+
+        self.data = data
+        return self.data
+
+
     async def load_cmcdata(self):
         if self.data == None:
             all_data = self.json_load(self.cmc_filepath)
@@ -478,6 +505,29 @@ class Helper(commands.Cog):
         if await self.check_cmcdata() == False:
             print('Data wasn\'t loaded. Loading data now...')
             return await self.load_cmcdata()
+
+    async def cmcdata_error_msg(self, solutions = False):
+        # Check if the error message should contain possible solutions.
+        if solutions:
+            header = [
+                'Cryptocurrency  |  ERROR:',
+                'The cryptocurrency data appears to be missing!'
+            ]
+
+            fields = [
+                ['[1] Force Load:', 'Try using the `load-cmcdata` command to force the data to load in again.', False],
+                ['[2] Restart:', 'Try restarting the bot. This will make the bot go through the process of loading the data from CoinMarketCap\'s servers again.', False],
+                ['[3] Reload Cog:', 'Try using the `reload {Insert Name of Cog}` command to unload the specified cog and load it back in. For this cog, the command would be `reload stocks`.', False]
+            ]
+        else:
+            header = [
+                'Cryptocurrency  |  ERROR:',
+                'The cryptocurrency data appears to be missing!'
+            ]
+
+        msg = self.create_embed_msg(header, fields, colour = discord.Colour.red())
+        return msg
+
 
     async def find_crypto_info(self, symbols):
         symbols = [symbol.upper() for symbol in symbols]

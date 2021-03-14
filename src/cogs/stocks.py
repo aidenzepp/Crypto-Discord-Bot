@@ -25,10 +25,8 @@ class Stocks(commands.Cog):
         
     # -- Commands --
     @commands.command(aliases = ['cmc-force', 'data-force', 'load-cmcdata'])
-    async def force_load__cmc_data(self, ctx):
-        with open(self.helper.cmc_filepath) as CMC_data:
-            all_data = json.load(CMC_data)
-            self.data = all_data['data']
+    async def force_load_cmc_data(self, ctx):
+        await self.helper.forceload_cmcdata()
 
         header = [
             '[Successful] Force Load: CoinMarketCap Data',
@@ -37,7 +35,6 @@ class Stocks(commands.Cog):
 
         confirmation = self.helper.create_embed_msg(header)
         await ctx.send(embed = confirmation)
-        return self.data
 
     @commands.command(aliases = ['crypto-top5', 'crypto-5', 'c-top5'])
     async def crypto_top_5(self, ctx):
