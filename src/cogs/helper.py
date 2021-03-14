@@ -196,9 +196,17 @@ class Helper(commands.Cog):
             self.data = data
 
         else:
-            with open(f'{self.hidden}/CMC_data.json', 'w') as outfile:
-                empty = {}
-                json.dump(empty, outfile)
+            # If the file can be found, and its contents present, then
+            # load into an unused variable.
+            # If the file can't be found (and throws the error below), then
+            # create the file by loading an empty dict. into the file.
+            try:
+                with open(f'{self.hidden}/CMC_data.json', 'r') as f:
+                    _ = json.load(f)
+            except FileNotFoundError:
+                with open(f'{self.hidden}/CMC_data.json', 'w') as outfile:
+                    empty = {}
+                    json.dump(empty, outfile)
 
     def __repr__(self):
         pass
