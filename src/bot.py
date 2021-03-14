@@ -18,6 +18,15 @@ with open('src/hidden/secrets.json') as f:
 # -- Run Confirmations --
 print('[ --- STARTUP CONFIRMATIONS: --- ]')
 time.sleep(1.0)
+print(f'''
+====================================
+       - CURRENT SETTINGS: -
+1. Bot Prefix: \'{prefix}\'
+2. Load Data on Startup: {datastartup}
+====================================
+
+''')
+time.sleep(1.0)
 confirm = input('Run confirmations? (y/n) [If not, the bot will startup immediately.]  |  Answer: ')
 time.sleep(1.0)
 
@@ -80,8 +89,12 @@ if run_confs:
         prefix_perm_confirm = input('Would you like the specified prefix to be a permanent change? (y/n)   |  Answer: ')
         if (prefix_perm_confirm.upper() == 'Y') or (prefix_perm_confirm.upper() == 'YES'):
             prefix_perm = True
+            time.sleep(1.0)
+            print('Request for maintaining prefix denied. Prefix was changed, permanently.')
         else:
             prefix_perm = False
+            time.sleep(1.0)
+            print('Request for maintaining prefix denied. Prefix was changed.')
         time.sleep(0.5)
         print(f'Bot Prefix: \'{prefix}\'')
         time.sleep(1.0)
@@ -100,6 +113,8 @@ if run_confs:
         time.sleep(1.0)
     else:
         print('The CoinMarketData will not be loaded on startup. Please use the \'load-cmcdata\' command to load the data manually.')
+        time.sleep(0.5)
+        print('Request for data load on startup denied.')
         data_perm = False
         time.sleep(1.0)
 
@@ -113,10 +128,13 @@ if run_confs:
             serverinfo['datastartup'] = data_perm
 
         json.dump(secrets, outfile, indent = 4)
+        print('[LOG] Preferences have been saved.')
+        time.sleep(1.0)
 
 
     time.sleep(1.0)
     print('[ --- STARTUP CONFIRMATIONS: END --- ]')
+    print(' ')
     time.sleep(1.0)
     
 
@@ -164,19 +182,18 @@ async def reload(ctx, extension):
 
 
 # -- Load Cogs --
-print('[PROCESS] Loading Cogs...')
-print(' ')
+print('[PROCESS] [COGS] Loading...')
+print('---------------------------------')
 time.sleep(0.75)
 
 for filename in os.listdir('src/cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
-        print(f'[cogs.{filename[:-3]}] has been loaded.')
+        print(f'--> [cogs.{filename[:-3]}] has been loaded.')
 
 time.sleep(0.75)
-print(' ')
-print('[PROCESS] Cogs Loaded.')
-
+print('---------------------------------')
+print('[PROCESS] [COGS] Loading complete.')
 
 
 # -- Run --
