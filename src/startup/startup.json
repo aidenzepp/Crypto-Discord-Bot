@@ -1,0 +1,88 @@
+{
+    "filepath": "src/hidden/secrets.json",
+    "responses": {
+        "confirm": ["Y", "YES"],
+        "decline": ["N", "NO"]
+    },
+    "startup_start": "[ --- STARTUP CONFIRMATIONS: --- ]",
+    "settings": [
+        "====================================",
+        "       - CURRENT SETTINGS: -        ",
+        "1. Bot Prefix: '{prefix}'",
+        "2. Load Data on Startup: {datastartup}",
+        "====================================\n"
+    ],
+    "run": {
+        "input": "Run confirmations? (y/n) [If not, the bot will startup immediately.]  |  Answer: ",
+        "if_run": {
+            "true": "---",
+            "false": [
+                "Commencing immediate startup...",
+                "\n[ --- STARTUP CONFIRMATIONS: END --- ]\n"
+            ]
+        }
+    },
+    "startup": {
+        "input": "[Confirmation] Would you like to start the bot? (y/n)   |  Answer: ",
+        "if_startup": {
+            "true": [
+                "Request for startup confirmed.",
+                "---"
+            ],
+            "false": [
+                "Request for startup denied. Exiting bot's startup process...",
+                "\n[ --- STARTUP CONFIRMATIONS: END --- ]\n",
+                "=====================",
+                " BOT STATUS: OFFLINE ",
+                "=====================\n",
+                "[ --- STARTUP CANCELED --- ]"
+            ]
+        }
+    },
+    "prefix": {
+        "input": "[Confirmation] Would you like to keep the command prefix set to '{prefix}'? (y/n)   |  Answer: ",
+        "if_prefix": {
+            "true": [
+                "Request for maintaining prefix confirmed.",
+                "Bot Prefix: '{prefix}'",
+                "---"
+            ],
+            "false": {
+                "input": "What would you like the command prefix to be set to?   |  Prefix: ",
+                "permanent": {
+                    "input": "Would you like the specified prefix to be a permanent change? (y/n)   |  Answer: ",
+                    "if_permanent": {
+                        "true": "Request for maintaining prefix denied. Prefix was changed, permanently.",
+                        "false": "Request for maintaining prefix denied. Prefix was changed."
+                    }
+                }
+            }
+        }
+    },
+    "data": {
+        "warning": "** Note: The following decision will be saved for future reference. **",
+        "input": "[Confirmation] Would you like to load the CoinMarketCap data on startup? (y/n)   |  Answer: ",
+        "if_data": {
+            "true": "Request for data load on startup confirmed.",
+            "false": [
+                "The CoinMarketData will not be loaded on startup. Please use the 'load-cmcdata' command to load the data manually.",
+                "Request for data load on startup denied."
+            ]
+        }
+    },
+    "preferences": "[LOG] Preferences have been saved.",
+    "startup_end": "\n[ --- STARTUP CONFIRMATIONS: END --- ]\n",
+    "cogs": [
+        "[PROCESS] [COGS] Loading...",
+        "---------------------------------",
+        "---------------------------------",
+        "[PROCESS] [COGS] Loading complete."
+    ],
+    "onready": [
+        "\n=======================",
+        "  BOT STATUS: READY  ",
+        "=======================\n",
+        "[ --- STARTUP COMPLETE --- ]",
+        "\n{ -- BOT LOG -- }"
+    ]
+}
