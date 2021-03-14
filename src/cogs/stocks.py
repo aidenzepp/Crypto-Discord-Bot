@@ -59,10 +59,10 @@ class Stocks(commands.Cog):
         await self.helper.check_server()
 
         member = target or ctx.author
-        found, found_info, not_found = await self.helper.find_crypto_info(args)
+        cinfo = await self.helper.find_crypto_info(args)
 
-        await self.helper.add_crypto_to_user(member, found_info)
-        messages = await self.helper.crypto_info_msg_simple(member, found, not_found)
+        await self.helper.add_crypto_to_user(member, cinfo.finfo)
+        messages = await self.helper.crypto_info_msg_simple(member, cinfo)
         await self.helper.send_embed_messages(ctx, messages, 0.5)
 
     @commands.command(aliases = ['compare-crypto', 'compare-c', 'comparecrypto', 'compcryp'])

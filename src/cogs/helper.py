@@ -1,4 +1,4 @@
-from operator import not_
+from operator import index, not_
 from typing import Type
 import discord
 from discord import member
@@ -10,6 +10,8 @@ import datetime as dt
 import json
 import time
 import os
+
+from cogs.utility import *
 #--
 
 '''
@@ -479,9 +481,8 @@ class Helper(commands.Cog):
 
     async def find_crypto_info(self, symbols):
         symbols = [symbol.upper() for symbol in symbols]
-        not_found = []
-        found = []
         found_info = {}
+        not_found = {}
 
         # For each crypto-symbol in the user's requested crypto-symbols...
         for symbol in symbols:
@@ -495,17 +496,16 @@ class Helper(commands.Cog):
                     # Set the key's value to the info of the currency. 
                     name = currency['name']
                     found_info[name] = currency
-                    found.append([name, symbol])
 
                     verify = True
                     continue
             
             # Verify if none of the currencies' symbols matched the requested symbol.
             if verify == False:
-                not_found.append(symbol)
+                not_found[symbol] = None
                 continue
 
-        return found, found_info, not_found
+        return FIND_CRYPTO_RESULTS(self.client, found_info, not_found)
 
     async def symbols_notfound_msg(self, not_found):
         header = [
@@ -525,11 +525,12 @@ class Helper(commands.Cog):
         error = self.create_embed_msg(header, fields, colour = discord.Colour.red())
         return error
 
-    async def crypto_info_msg_simple(self, member, found, not_found):
+    async def crypto_info_msg_simple(self, member, cinfo):
         messages = []
+        fkeys = [{key: cinfo.finfo[key]['symbol']} for key in cinfo.fkeys]
         header = [
                 f'Cryptocurrencies Added To {member}\'s Info:',
-                f'{found}'
+                f'{fkeys}'
             ]
 
         found_msg = self.create_embed_msg(header)
@@ -537,21 +538,21 @@ class Helper(commands.Cog):
 
         # Creates an 'error' message if 'not_found' contains any
         # symbols that couldn't be found in 'self.data'.
-        if len(not_found) > 0:
-            error = await self.symbols_notfound_msg(not_found)
+        if len(cinfo.nfound) > 0:
+            error = await self.symbols_notfound_msg(cinfo.nfound)
             messages.append(error)
 
         return messages
 
     async def crypto_info_msg(self, symbols):
-        found, found_info, not_found = await self.find_crypto_info(symbols)
+        cinfo = await self.find_crypto_info(symbols)
         messages = []
-        i = 1
 
         # For each pair (name, symbol) in 'found'...
-        for name, symbol in found:
+        for index, name in enumerate(cinfo.fkeys):
             # 'info' equals the value of the key in 'found_info' that matches 'name'.
-            info = found_info[name]
+            info = cinfo.finfo[name]
+            symbol = info['symbol']
 
             # Setting price to 2 decimal places.
             price = round(info['quote'][self.rwc]['price'], 2)
@@ -561,7 +562,7 @@ class Helper(commands.Cog):
             dateadded_dtconv = self.dtconvert(info['date_added'], type = 'cmc')
             lastupd_dtconv = self.dtconvert(info['last_updated'], type = 'cmc')
 
-            header = f'Cryptocurrency Information: [{symbol}]  |  {i} of {len(found)}'
+            header = f'Cryptocurrency Information: [{symbol}]  |  {index + 1} of {len(cinfo.finfo)}'
             fields = [
                 ['`Name:`', info['name'], True],
                 ['`Symbol:`', info['symbol'], True],
@@ -580,15 +581,14 @@ class Helper(commands.Cog):
                 ['Last Updated:', lastupd_dtconv, False]
             ]
             footer = self.dtformat_return(True)
-            info = self.create_embed_msg(header, fields, footer)
 
-            i += 1
+            info = self.create_embed_msg(header, fields, footer)
             messages.append(info)
         
         # Creates an 'error' message if 'not_found' contains any
         # symbols that couldn't be found in 'self.data'.
-        if len(not_found) > 0:
-            error = await self.symbols_notfound_msg(not_found)
+        if len(cinfo.nfound) > 0:
+            error = await self.symbols_notfound_msg(cinfo.nfound)
             messages.append(error)
 
         return messages
@@ -647,24 +647,25 @@ class Helper(commands.Cog):
         # Store the 'crypto' key's value (cryptocurrencies' info) in 'currencies'.
         currencies = uinfo['crypto']
         # Gather the currencies found and their info, and the ones not found in 'self.data'.
-        found, found_info, not_found = await self.find_crypto_info(symbols)
+        cinfo = await self.find_crypto_info(symbols)
+        fkeys = cinfo.fkeys
         # Stores the currencies not in the user's info file.
-        not_in_uinfo = []
+        not_in_uinfo = {}
         # Contains all the formatted/altered information for each currency.
-        special_info_all = []
+        comparison_info_all = {}
 
         # For each currency in the keys of 'found_info' (e.g. 'Bitcoin')...
-        for currency in found_info.keys():
+        for currency_name in fkeys:
             # Guarantees a symbol not in 'self.data' doesn't pass through.
             verify = False
 
-            if currency in currencies:
+            if currency_name in currencies:
                 # Cryptocurrency Information
-                currency = currencies[currency]
+                currency = currencies[currency_name]
                 symbol = currency['symbol']
                 name = currency['name']
                 id = currency['id']
-                name_finfo = found_info[name]
+                name_finfo = cinfo.finfo[name]
                 # --
 
                 # Cryptocurrency information being stored in 'sinfo' dict.,
@@ -753,22 +754,24 @@ class Helper(commands.Cog):
                 sinfo['dates'] = [dateadded_dtconv, lastupd_dtconv_uinfo, lastupd_dtconv_finfo]
 
                 verify = True
-                special_info_all.append(sinfo)
+                comparison_info_all[currency_name] = sinfo
                 continue
 
             # Verify if the currency's info couldn't be found in the user's info file.
             if verify == False:
-                not_in_uinfo.append(currency)
+                not_in_uinfo[currency_name] = cinfo.finfo[currency_name]['symbol']
                 continue
 
-        return special_info_all, not_in_uinfo, not_found
+        return COMPARE_CRYPTO_RESULTS(self.client, cinfo.nfound, not_in_uinfo, comparison_info_all)
 
     async def compare_crypto_msg(self, member, symbols):
-        all_sinfo, not_in_uinfo, not_found = await self.compare_crypto(member, symbols)
+        sinfo = await self.compare_crypto(member, symbols)
         messages = []
-        i = 1
 
-        for currency in all_sinfo:
+        for index, currency_name in enumerate(sinfo.cmpinfoall):
+            currency = sinfo.cmpinfoall[currency_name]
+            count = index + 1
+
             '''
             1. Symbol
             2. Name
@@ -791,23 +794,23 @@ class Helper(commands.Cog):
             # 4
             price_uinfo, price_finfo, price_tdiff, price_prcnt = currency['price']
             # 5
-            volume24h_uinfo, volume24h_finfo, volume24h_tdiff, volume24h_prcnt = currency['volume24h']
+            _, volume24h_finfo, _, volume24h_prcnt = currency['volume24h']
             # 6
-            cmcrank_uinfo, cmcrank_finfo, cmcrank_tdiff = currency['cmcrank']
+            cmcrank_uinfo, cmcrank_finfo, _ = currency['cmcrank']
             # 7
-            nummarkpairs_uinfo, nummarkpairs_finfo, nummarkpairs_tdiff, nummarketpairs_prcnt = currency['nummarkpairs']
+            _, nummarkpairs_finfo, _, nummarketpairs_prcnt = currency['nummarkpairs']
             # 8
-            totalsupply_uinfo, totalsupply_finfo, totalsupply_tdiff, totalsupply_prcnt = currency['totalsupply']
+            _, totalsupply_finfo, _, totalsupply_prcnt = currency['totalsupply']
             # 9
-            circlsupply_uinfo, circlsupply_finfo, circlsupply_tdiff, circlsupply_prcnt = currency['circlsupply']
+            _, circlsupply_finfo, _, circlsupply_prcnt = currency['circlsupply']
             # 10
-            maxsupply_uinfo, maxsupply_finfo, maxsupply_tdiff, maxsupply_prcnt = currency['maxsupply']
+            _, maxsupply_finfo, _, maxsupply_prcnt = currency['maxsupply']
             # 11
             dateadded_dtconv, lastupd_dtconv_uinfo, lastupd_dtconv_finfo = currency['dates']
 
 
 
-            header = f'Cryptocurrency Information: [{symbol}]  |  {i} of {len(all_sinfo)}'
+            header = f'Cryptocurrency Information: [{symbol}]  |  {count} of {len(sinfo.cmpinfoall)}'
             fields = [
                 ['`Name:`', name, True],
                 ['`Symbol:`', symbol, True],
@@ -834,18 +837,17 @@ class Helper(commands.Cog):
 
             info = self.create_embed_msg(header, fields, footer)
             messages.append(info)
-            i += 1
 
         # Verify if the currency's info couldn't be found in the user's info file.
-        if len(not_in_uinfo) > 0:
-            error_notuinfo = await self.symbols_notuinfo_msg(not_in_uinfo)
+        if len(sinfo.nuikeys) > 0:
+            error_notuinfo = await self.symbols_notuinfo_msg(sinfo.notuinfo)
             messages.append(error_notuinfo)
 
         # Verify if none of the currencies' symbols matched the requested symbol.
-        if len(not_found) > 0:
-            error_notfound = await self.symbols_notfound_msg(not_found)
+        if len(sinfo.nfkeys) > 0:
+            error_notfound = await self.symbols_notfound_msg(sinfo.nfound)
             messages.append(error_notfound)
-            
+
         return messages
 
 
