@@ -38,11 +38,7 @@ else:
     run_confs = False
     print('Commencing immediate startup...')
     time.sleep(0.5)
-    print(f'Bot Prefix: \'{prefix}\'')
-    time.sleep(1.0)
-    print(f'Load Data on Startup: {datastartup}')
-    time.sleep(1.0)
-    print('[ --- STARTUP CONFIRMATIONS: END --- ]')
+    print('\n[ --- STARTUP CONFIRMATIONS: END --- ]\n')
     time.sleep(1.0)
 
 if run_confs:
@@ -58,10 +54,9 @@ if run_confs:
     else:
         print('Request for startup denied. Exiting bot\'s startup process...')
         time.sleep(1.0)
-        print('[ --- STARTUP CONFIRMATIONS: END --- ]')
+        print('\n[ --- STARTUP CONFIRMATIONS: END --- ]\n')
         time.sleep(1.0)
         print('''
-
         =====================
          BOT STATUS: OFFLINE
         =====================
@@ -133,8 +128,7 @@ if run_confs:
 
 
     time.sleep(1.0)
-    print('[ --- STARTUP CONFIRMATIONS: END --- ]')
-    print(' ')
+    print('\n[ --- STARTUP CONFIRMATIONS: END --- ]\n')
     time.sleep(1.0)
     
 
@@ -160,6 +154,8 @@ async def on_ready():
     )
     time.sleep(1.0)
     print('[ --- STARTUP COMPLETE --- ]')
+    time.sleep(2.0)
+    print('''\n{ -- BOT LOG -- }''')
 
 
 
@@ -183,16 +179,16 @@ async def reload(ctx, extension):
 
 # -- Load Cogs --
 print('[PROCESS] [COGS] Loading...')
-print('---------------------------------')
 time.sleep(0.75)
+print('---------------------------------')
 
 for filename in os.listdir('src/cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
         print(f'--> [cogs.{filename[:-3]}] has been loaded.')
 
-time.sleep(0.75)
 print('---------------------------------')
+time.sleep(0.75)
 print('[PROCESS] [COGS] Loading complete.')
 
 
