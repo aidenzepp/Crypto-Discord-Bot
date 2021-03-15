@@ -87,7 +87,7 @@ class Information(commands.Cog):
     @commands.command(aliases = ['add-user-info', 'add-uinfo', 'adduser'])
     async def add_user_info(self, ctx, target: Optional[Member]):
         member = target or ctx.author
-        # Check if the user's info file has already been created.
+        # Sends message if the user's info file has already been created.
         verify = await self.helper.find_user(member)
         if verify != None:
             header = [

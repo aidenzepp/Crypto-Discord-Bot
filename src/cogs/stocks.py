@@ -26,6 +26,7 @@ class Stocks(commands.Cog):
     # -- Commands --
     @commands.command(aliases = ['cmc-force', 'data-force', 'load-cmcdata'])
     async def force_load_cmc_data(self, ctx):
+        # Force load the CMC data.
         await self.helper.forceload_cmcdata()
 
         header = [
@@ -38,6 +39,7 @@ class Stocks(commands.Cog):
 
     @commands.command(aliases = ['crypto-top5', 'crypto-5', 'c-top5'])
     async def crypto_top_5(self, ctx):
+        # Check if data is loaded, and load it if it's not.
         await self.helper.check_and_load()
         
         top5 = await self.helper.crypto_top5_msg()
@@ -45,6 +47,7 @@ class Stocks(commands.Cog):
 
     @commands.command(aliases = ['see-crypto-info', 'see-cinfo', 'seecrypto'])
     async def see_crypto_info(self, ctx, *args):
+        # Check if data is loaded, and load it if it's not.
         await self.helper.check_and_load()
 
         messages = await self.helper.crypto_info_msg(args)
@@ -52,7 +55,9 @@ class Stocks(commands.Cog):
 
     @commands.command(aliases = ['add-crypto', 'add-c', 'addcrypto'])
     async def add_crypto_to_uinfo(self, ctx, target: Optional[Member], *args):
+        # Check if data is loaded, and load it if it's not.
         await self.helper.check_and_load()
+        # Check if the server has been set, and set it if it's not.
         await self.helper.check_server()
 
         member = target or ctx.author
@@ -64,7 +69,9 @@ class Stocks(commands.Cog):
 
     @commands.command(aliases = ['compare-crypto', 'compare-c', 'comparecrypto', 'compcryp'])
     async def compare_crypto_to_uinfo(self, ctx, target: Optional[Member], *args):
+        # Check if data is loaded, and load it if it's not.
         await self.helper.check_and_load()
+        # Check if the server has been set, and set it if it's not.
         await self.helper.check_server()
 
         member = target or ctx.author

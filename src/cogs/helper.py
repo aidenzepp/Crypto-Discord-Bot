@@ -704,7 +704,7 @@ class Helper(commands.Cog):
         uinfo = await self.find_user(member)
         # Store the 'crypto' key's value (cryptocurrencies' info) in 'currencies'.
         currencies = uinfo['crypto']
-        # Gather the currencies found and their info, and the ones not found in 'self.data'.
+        # Gather the info of the currencies found and the name and symbol of ones not found in 'self.data'.
         cinfo = await self.find_crypto_info(symbols)
         fkeys = cinfo.fkeys
         # Stores the currencies not in the user's info file.
@@ -712,7 +712,7 @@ class Helper(commands.Cog):
         # Contains all the formatted/altered information for each currency.
         comparison_info_all = {}
 
-        # For each currency in the keys of 'found_info' (e.g. 'Bitcoin')...
+        # For each currency's name in 'cinfo.finfo's keys (e.g. 'Bitcoin')...
         for currency_name in fkeys:
             # Guarantees a symbol not in 'self.data' doesn't pass through.
             verify = False
@@ -727,7 +727,7 @@ class Helper(commands.Cog):
                 # --
 
                 # Cryptocurrency information being stored in 'sinfo' dict.,
-                # which is stored in 'special_info_all'.
+                # which is stored in 'comparison_info_all'.
                 sinfo = {}
                 sinfo['symbol'] = symbol
                 sinfo['name'] = name
