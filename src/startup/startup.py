@@ -67,7 +67,7 @@ def confirmations(prefix):
             time.sleep(1.0)
     else:
         for index, line in enumerate(if_startup['false']):
-            if index != (3, 4):
+            if index not in (2, 3):
                 print(line)
                 time.sleep(1.0)
             else:
