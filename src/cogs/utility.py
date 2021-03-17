@@ -7,10 +7,10 @@ import json
 
 # -- CoinMarketCap --
 class CMC_DATA_REQUEST(commands.Cog):
-    def __init__(self, client, url = None, parameters = {}, headers = {}, filepath = None):
+    def __init__(self, client, url = None, parameters = None, headers = None, filepath = None):
         self.client = client
         self.url = url
-        self.parameters = parameters
+        self.parameters = parameters 
         self.headers = headers
         self.filepath = filepath
     
@@ -20,15 +20,15 @@ class CMC_DATA_REQUEST(commands.Cog):
 
         try:
             response = session.get(self.url, params = self.parameters)
-            data = json.loads(response.text)
+            all_data = json.loads(response.text)
 
             with open(self.filepath, 'w') as outfile:
-                json.dump(data, outfile, indent = 4)
+                json.dump(all_data, outfile, indent = 4)
 
         except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
             print('[CMC API] Encountered Error: ' + ERROR)
 
-        return data['data']
+        return all_data['data']
 
 class FIND_CRYPTO_RESULTS(commands.Cog):
     def __init__(self, client, found_info = {}, not_found = {}):
