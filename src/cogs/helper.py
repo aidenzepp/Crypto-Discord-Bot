@@ -567,14 +567,17 @@ class Helper(commands.Cog):
 
     async def crypto_info_msg_simple(self, member, cinfo):
         messages = []
-        fkeys = [{key: cinfo.finfo[key]['symbol']} for key in cinfo.fkeys]
-        header = [
-                f'Cryptocurrencies Added To {member}\'s Info:',
-                f'{fkeys}'
-            ]
 
-        found_msg = self.create_embed_msg(header)
-        messages.append(found_msg)
+        # Send a message if 'found' contains any symbols found in 'self.data'.
+        if len(cinfo.finfo) != 0:
+            fkeys = [{key: cinfo.finfo[key]['symbol']} for key in cinfo.fkeys]
+            header = [
+                    f'Cryptocurrencies Added To {member}\'s Info:',
+                    f'{fkeys}'
+                ]
+
+            found_msg = self.create_embed_msg(header)
+            messages.append(found_msg)
 
         # Creates an 'error' message if 'not_found' contains any
         # symbols that couldn't be found in 'self.data'.

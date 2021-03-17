@@ -2,12 +2,11 @@ import os
 from os import error
 import discord
 from discord.ext import commands
+from discord.member import Member
 from typing import Optional
 from decimal import *
 import json
 import time
-
-from discord.member import Member
 
 from cogs.helper import Helper
 #--
