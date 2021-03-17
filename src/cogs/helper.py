@@ -164,42 +164,27 @@ class Helper(commands.Cog):
         self.rwc = 'USD' # 'rwc' = Real World Currency; the currency that the cryptocurrency will be converted to.
 
         
+        # If the bot has been set to load the CoinMarketCap data on startup...
         if self.datastartup:
-            # CoinMarketCap API Documentation - Quickstart Guide's Format
             url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-
             parameters = {
                 'start': '1',
                 'limit': '100',
                 'convert': self.rwc
             }
-
             headers = {
                 'Accepts': 'application/json',
                 'X-CMC_PRO_API_KEY': self.keys['coinmarketcap']
             }
+            filepath = f'{self.hidden}/CMC_data.json'
 
-            session = Session()
-            session.headers.update(headers)
+            request = CMC_DATA_REQUEST(client, url, parameters, headers, filepath)
+            self.data = request.request_data()
 
-            try:
-                response = session.get(url, params = parameters)
-                data = json.loads(response.text)
-
-                with open(f'{self.hidden}/CMC_data.json', 'w') as f:
-                    json.dump(data, f, indent = 4)
-
-            except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
-                print('[CMC API] Encountered Error: ' + ERROR)
-            # --
-
-            self.data = data
-
+        # Otherwise...
         else:
-            # If the file can be found, and its contents present, then
-            # load into an unused variable.
-            # If the file can't be found (and throws the error below), then
-            # create the file by loading an empty dict. into the file.
+            # If the file can be found, and its contents present, then load into an unused variable.
+            # If the file can't be found (and throws the error below), then create the file by loading an empty dict. into the file.
             try:
                 with open(f'{self.hidden}/CMC_data.json', 'r') as f:
                     _ = json.load(f)
@@ -493,7 +478,7 @@ class Helper(commands.Cog):
             print('[CMC API] Encountered Error: ' + ERROR)
         # --
 
-        self.data = data
+        self.data = data['data']
         return self.data
 
 

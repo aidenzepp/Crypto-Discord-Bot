@@ -1,6 +1,34 @@
 import discord
 from discord.ext import commands
+from requests import Request, Session
+from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+import json
 # --
+
+# -- CoinMarketCap --
+class CMC_DATA_REQUEST(commands.Cog):
+    def __init__(self, client, url = None, parameters = {}, headers = {}, filepath = None):
+        self.client = client
+        self.url = url
+        self.parameters = parameters
+        self.headers = headers
+        self.filepath = filepath
+    
+    def request_data(self):
+        session = Session()
+        session.headers.update(self.headers)
+
+        try:
+            response = session.get(self.url, params = self.parameters)
+            data = json.loads(response.text)
+
+            with open(self.filepath, 'w') as outfile:
+                json.dump(data, outfile, indent = 4)
+
+        except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
+            print('[CMC API] Encountered Error: ' + ERROR)
+
+        return data['data']
 
 class FIND_CRYPTO_RESULTS(commands.Cog):
     def __init__(self, client, found_info = {}, not_found = {}):
@@ -25,3 +53,4 @@ class COMPARE_CRYPTO_RESULTS(commands.Cog):
 def setup(client):
     client.add_cog(FIND_CRYPTO_RESULTS(client))
     client.add_cog(COMPARE_CRYPTO_RESULTS(client))
+    client.add_cog(CMC_DATA_REQUEST(client))
