@@ -43,8 +43,8 @@ Self Attributes:
         * keys: the API keys stored in 'src/secrets.json'; type() == dict
         * keys['discord']: the Discord API key; type() == str
         * keys['coinmarketcap']: the CoinMarketCap API key; type() == str
-    > self.cmc_filepath = 'src/hidden/CMC_DATA.json'
-        * True Return Value = f'{self.hidden}/CMC_DATA.json'
+    > self.cmc_filepath = 'src/hidden/CMC_DATA/CMC_DATA.json'
+        * True Return Value = f'{self.hidden}/CMC_DATA/CMC_DATA.json'
         * Found under '-- Files & Folder Paths --' section.
     > self.usersinfo_dir = 'src/hidden/ALL_USERS_INFO'
         * True Return Value = f'{self.hidden}/ALL_USERS_INFO'
@@ -156,7 +156,7 @@ class Helper(commands.Cog):
         # Because the code above is inserted this way,
         # the 'keys' object can be accessed using 'self.keys'.
 
-    with open('src/hidden/CMC_DATA_REQUEST.json') as f:
+    with open('src/hidden/CMC_DATA/CMC_DATA_REQUEST.json') as f:
         request_data = json.load(f)
         requestinfo = request_data['requestinfo']
         
@@ -183,10 +183,10 @@ class Helper(commands.Cog):
             # If the file can be found, and its contents present, then load into an unused variable.
             # If the file can't be found (and throws the error below), then create the file by loading an empty dict. into the file.
             try:
-                with open(f'{self.hidden}/CMC_DATA.json', 'r') as f:
+                with open(f'{self.hidden}/CMC_DATA/CMC_DATA.json', 'r') as f:
                     _ = json.load(f)
             except FileNotFoundError:
-                with open(f'{self.hidden}/CMC_DATA.json', 'w') as outfile:
+                with open(f'{self.hidden}/CMC_DATA/CMC_DATA.json', 'w') as outfile:
                     empty = {}
                     json.dump(empty, outfile)
 
@@ -201,11 +201,11 @@ class Helper(commands.Cog):
     @property
     def cmc_filepath(self):
         try:
-            return f'{self.hidden}/CMC_DATA.json'
+            return f'{self.hidden}/CMC_DATA/CMC_DATA.json'
         except FileNotFoundError:
-            with open(f'{self.hidden}/CMC_DATA.json', 'w') as f:
+            with open(f'{self.hidden}/CMC_DATA/CMC_DATA.json', 'w') as f:
                 _ = json.load(f)
-            return f'{self.hidden}/CMC_DATA.json'
+            return f'{self.hidden}/CMC_DATA/CMC_DATA.json'
 
     @property
     def usersinfo_dir(self):
@@ -468,7 +468,7 @@ class Helper(commands.Cog):
             response = session.get(url, params = parameters)
             all_data = json.loads(response.text)
 
-            with open(f'{self.hidden}/CMC_DATA.json', 'w') as f:
+            with open(f'{self.hidden}/CMC_DATA/CMC_DATA.json', 'w') as f:
                 json.dump(all_data, f, indent = 4)
 
         except (ConnectionError, Timeout, TooManyRedirects) as ERROR:
