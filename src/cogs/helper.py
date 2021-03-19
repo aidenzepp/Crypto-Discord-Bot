@@ -28,8 +28,10 @@ II. Using the 'Helper' Class:
 
 
 III. CoinMarketCap Data:
-    - The CMC will be stored in the Helper Class.
+    - The CoinMarketCap data will be stored in the Helper Class.
         [** This keeps the error of a circular import from occurring. **]
+    - The data will only be retrieved from CoinMarketCap if it is requested by the user in the startup seqeuence.
+    - Similarly, if the data has previously been requested on startup, the data will immediately load again on the next startup sequence.
 
 [ ~~~ ]
 
@@ -118,9 +120,12 @@ Functions List:
             * member: type() == discord.Member
 
     - COINMARKETCAP -
+        > [ASYNC] forceload_cmcdata()
         > [ASYNC] load_cmcdata()
         > [ASYNC] check_cmcdata()
         > [ASYNC] check_and_load()
+        > [ASYNC] cmcdata_error_msg(solutions)
+            * solutions = False; whether or not to include solutions to the error message's content.
         > [ASYNC] find_crypto_info(symbols)
             * symbols: the symbols of requested cryptocurrencies; type() == tuple
         > [ASYNC] symbols_notfound_msg(not_found)
@@ -147,7 +152,7 @@ Functions List:
 
 class Helper(commands.Cog):
 
-    # -- Load API Keys --
+    # -- Load Secrets --
     with open('src/hidden/secrets.json') as f: 
         secrets = json.load(f)
         keys = secrets['keys']
@@ -156,6 +161,7 @@ class Helper(commands.Cog):
         # Because the code above is inserted this way,
         # the 'keys' object can be accessed using 'self.keys'.
 
+    # -- Load Data Request Info --
     with open('src/hidden/CMC_DATA/CMC_DATA_REQUEST.json') as f:
         request_data = json.load(f)
         requestinfo = request_data['requestinfo']

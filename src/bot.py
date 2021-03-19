@@ -9,7 +9,7 @@ import os
 from startup.startup import *
 # --
 
-# -- Load Discord API Key --
+# -- Load Secrets --
 with open('src/hidden/secrets.json') as f: 
     secrets = json.load(f)
     keys = secrets['keys']
